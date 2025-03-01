@@ -17,6 +17,7 @@ const search = () => {
 
 <template>
   <div>
+    <navbar />
     <button @click="search">Search</button>
   </div>
 </template>

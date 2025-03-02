@@ -93,12 +93,43 @@ const moveLearnMethods = ref<string[]>([])
 
 
 const isOpen = ref(false)
-const openModal = (item: Version) => {
-  isOpen.value = true
-
+const openModal = async (item: Version) => {
   image.value = item.image
-  version.value = item.label
-  console.log(item.id)
+  try {
+    await getVersionInfo(item.id)
+    isOpen.value = true
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+watch(isOpen, () => {
+  if (!isOpen.value) {
+    version.value = ''
+  }
+})
+
+const getVersionInfo = async (id: number) => {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `https://pokeapi.co/api/v2/version/${id}`,
+      type: 'GET',
+      dataType: 'json',
+      success: (res) => {
+        console.log(res)
+        version.value = capitalize(res.name)
+        resolve(res)
+      },
+      error: (error) => {
+        console.log(error)
+        reject(error)
+      }
+    })
+  })
 }
 </script>
 

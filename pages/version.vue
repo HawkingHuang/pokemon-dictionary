@@ -4,6 +4,8 @@ definePageMeta({
 })
 
 const carouselRef = ref()
+const carouselRef2 = ref()
+const carouselRef3 = ref()
 onMounted(() => {
   setInterval(() => {
     if (!carouselRef.value) return
@@ -13,83 +15,35 @@ onMounted(() => {
     }
 
     carouselRef.value.next()
-  }, 3000)
+  }, 5000)
+
+  setInterval(() => {
+    if (!carouselRef2.value) return
+
+    if (carouselRef2.value.page === carouselRef2.value.pages) {
+      return carouselRef2.value.select(0)
+    }
+
+    carouselRef2.value.next()
+  }, 5000)
+
+  setInterval(() => {
+    if (!carouselRef3.value) return
+
+    if (carouselRef3.value.page === carouselRef3.value.pages) {
+      return carouselRef3.value.select(0)
+    }
+
+    carouselRef3.value.next()
+  }, 5000)
 })
 
-interface Version {
-  id: number,
-  label: string,
-  image: string
-}
-
-const items = [
-  {
-    id: 1,
-    label: 'Pokémon Red Version',
-    image: '/images/versions/red_version.png'
-  },
-  {
-    id: 2,
-    label: 'Pokémon Blue Version',
-    image: '/images/versions/blue_version.png'
-  },
-  {
-    id: 3,
-    label: 'Pokémon Yellow Version',
-    image: '/images/versions/yellow_version.png'
-  },
-  {
-    id: 4,
-    label: 'Pokémon Gold Version',
-    image: '/images/versions/gold_version.png'
-  },
-  {
-    id: 5,
-    label: 'Pokémon Silver Version',
-    image: '/images/versions/silver_version.png'
-  },
-  {
-    id: 6,
-    label: 'Pokémon Crystal Version',
-    image: '/images/versions/crystal_version.png'
-  },
-  {
-    id: 7,
-    label: 'Pokémon Ruby Version',
-    image: '/images/versions/ruby_version.jpg'
-  },
-  {
-    id: 8,
-    label: 'Pokémon Sapphire Version',
-    image: '/images/versions/sapphire_version.jpg'
-  },
-  {
-    id: 9,
-    label: 'Pokémon Emerald Version',
-    image: '/images/versions/emerald_version.jpg'
-  },
-  {
-    id: 10,
-    label: 'Pokémon FireRed Version',
-    image: '/images/versions/fire_red_version.jpg'
-  },
-  {
-    id: 11,
-    label: 'Pokémon LeafGreen Version',
-    image: '/images/versions/leaf_green_version.jpg'
-  },
-]
-
-const test = (item: Version) => {
-  console.log(item)
-}
-
+import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'
 const image = ref<string>('')
 const version = ref<string>('')
 const generation = ref<string>('')
-const pokedexes = ref<string[]>([])
-const regions = ref<string[]>([])
-const moveLearnMethods = ref<string[]>([])
+const pokedexes = ref<string>('')
+const regions = ref<string>('')
 
 
 const isOpen = ref(false)
@@ -103,16 +57,7 @@ const openModal = async (item: Version) => {
   }
 }
 
-const capitalize = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-watch(isOpen, () => {
-  if (!isOpen.value) {
-    version.value = ''
-  }
-})
-
+import { capitalizeVersion, capitalizeGeneration, capitalizePokedexes, capitalizeRegions } from '@/utils/capitalize'
 const getVersionInfo = async (id: number) => {
   return new Promise((resolve, reject) => {
     $.ajax({
@@ -120,9 +65,23 @@ const getVersionInfo = async (id: number) => {
       type: 'GET',
       dataType: 'json',
       success: (res) => {
-        console.log(res)
-        version.value = capitalize(res.name)
-        resolve(res)
+        version.value = capitalizeVersion(res.name)
+
+        $.ajax({
+          url: res.version_group.url,
+          type: 'GET',
+          dataType: 'json',
+          success: (details) => {
+            generation.value = capitalizeGeneration(details.generation.name)
+            pokedexes.value = capitalizePokedexes(details.pokedexes)
+            regions.value = capitalizeRegions(details.regions)
+
+            resolve(res)
+          },
+          error: (error) => {
+            console.log(error)
+          }
+        })
       },
       error: (error) => {
         console.log(error)
@@ -135,20 +94,29 @@ const getVersionInfo = async (id: number) => {
 
 <template>
   <div>
-    <UCarousel ref="carouselRef" v-slot="{ item }" :items="items">
-      <UButton @click="openModal(item)" color="gray">
-        <img :src="item.image" width="300" height="400" draggable="false" @click="test(item)">
+    <UCarousel ref="carouselRef" v-slot="{ item }" :items="items" class="mb-4">
+      <UButton @click="openModal(item)" color="gray" class="mx-2">
+        <img :src="item.image" width="300" height="400" draggable="false">
+      </UButton>
+    </UCarousel>
+    <UCarousel ref="carouselRef2" v-slot="{ item }" :items="itemsSecondRow" class="mb-4">
+      <UButton @click="openModal(item)" color="gray" class="mx-2">
+        <img :src="item.image" width="300" height="400" draggable="false">
+      </UButton>
+    </UCarousel>
+    <UCarousel ref="carouselRef3" v-slot="{ item }" :items="itemsThirdRow" class="mb-4">
+      <UButton @click="openModal(item)" color="gray" class="mx-2">
+        <img :src="item.image" draggable="false" class="w-[225px] h-[400px]">
       </UButton>
     </UCarousel>
     <UModal v-model="isOpen" :ui="{background: 'bg-gradient-to-tr from-gray-100 to-gray-300'}">
-      <div class="mx-auto mt-4">
-        <img :src="image" width="300" height="300" class="rounded-3xl">
+      <div class="mx-auto my-4">
+        <img :src="image" class="rounded-3xl max-h-[300px] w-auto">
       </div>
       <div class="text-xl font-bold p-4">Version: {{ version }}</div>
       <div class="text-xl font-bold p-4">Generation: {{ generation }}</div>
       <div class="text-xl font-bold p-4">Pokédex: {{ pokedexes }}</div>
       <div class="text-xl font-bold p-4">Regions: {{ regions }}</div>
-      <div class="text-xl font-bold p-4">Move Learn Methods: {{ moveLearnMethods }}</div>
     </UModal>
   </div>
 </template>

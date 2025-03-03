@@ -31,3 +31,7 @@ export const capitalizeRegions = (regions: Region[]): string => {
   const regionList = regions.map(region => region.name.charAt(0).toUpperCase() + region.name.slice(1))
   return regionList.join('/')
 }
+
+export const capitalizeName = (name: string): string => {
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}

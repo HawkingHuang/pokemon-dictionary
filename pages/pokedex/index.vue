@@ -6,9 +6,11 @@ definePageMeta({
 
 const isLoading = ref<boolean>(false)
 const isOpen = ref<boolean>(false)
-const currentVersion = ref<string>('')
+// const currentVersion = ref<string>('')
+const currentVersion = useState<string>('currentVersion', () => '')
 
-const pokedexInfo = ref<any>([])
+// const pokedexInfo = ref<any>([])
+const pokedexInfo = useState<any>('pokedexInfo', () => [])
 
 const fetchPokemonSpecies = (name: string) => {
   return new Promise((resolve, reject) => {
@@ -68,22 +70,28 @@ const getPokedexInfo = (id: number, version: string) => {
   <div>
     <div>
       <UButton label="Choose a Pokédex version" @click="isOpen = true" class="text-xl m-1" />
-      <div class="p-1 mt-4" v-if="currentVersion">
+      <div v-if="currentVersion" class="p-1 mt-4" >
         <span class="text-2xl font-bold bg-gray-200 p-1 rounded">{{ currentVersion }}</span>
       </div>
-      <UCommandPalette v-if="isLoading" loading :empty-state="{ icon: '', label: '', queryLabel: '' }" />
+      <div v-else class="p-1 mt-4 animate">
+        <img src="/images/backgrounds/pokedex_background.png" alt="" class="opacity-50 rounded-lg">
+      </div>
 
+      <UCommandPalette v-if="isLoading" loading :empty-state="{ icon: '', label: '', queryLabel: '' }" />
       <div v-else class="grid grid-cols-8 mt-4 p-2 gap-2 max-h-[80vh] overflow-y-auto custom-scroll animate">
         <UCard v-for="pokemon in pokedexInfo" :key="pokemon.id">
           <template #header>
-            <span class="text-lg font-bold bg-gray-200 p-1 rounded">ID: {{ pokemon.id }}</span>
+            <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>
             <h4 class="text-xl font-bold mt-2">{{ capitalizeName(pokemon.name) }}</h4>
           </template>
-          <UButton color="gray" class="mx-2">
-            <img :src="pokemon.image" width="300" height="400">
-          </UButton>
+          <NuxtLink :to="`/pokedex/${pokemon.name}`">
+            <UButton color="gray" class="mx-2">
+              <img :src="pokemon.image" width="300" height="400">
+            </UButton>
+          </NuxtLink>
         </UCard>
       </div>
+
   
       <USlideover v-model="isOpen">
         <UCard

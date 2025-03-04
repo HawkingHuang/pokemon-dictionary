@@ -6,10 +6,7 @@ definePageMeta({
 
 const isLoading = ref<boolean>(false)
 const isOpen = ref<boolean>(false)
-// const currentVersion = ref<string>('')
 const currentVersion = useState<string>('currentVersion', () => '')
-
-// const pokedexInfo = ref<any>([])
 const pokedexInfo = useState<any>('pokedexInfo', () => [])
 
 const fetchPokemonSpecies = (name: string) => {

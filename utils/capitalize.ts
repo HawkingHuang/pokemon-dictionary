@@ -1,4 +1,6 @@
 export const capitalizeVersion = (str: string): string => {
+  if(str.includes('hp')) return str.toUpperCase()
+    
   if(str.includes('-')) {
     const firstPartStr = str.split('-')[0].charAt(0).toUpperCase() + str.split('-')[0].slice(1)
     const secondPartStr = str.split('-')[1].charAt(0).toUpperCase() + str.split('-')[1].slice(1)

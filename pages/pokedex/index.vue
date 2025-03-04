@@ -4,9 +4,64 @@ definePageMeta({
   layout: 'base-layout'
 })
 
+const determineParam = (version: string): string => {
+  switch (version) {
+    case 'Red/Blue/Yellow':
+      return 'red-blue'
+    case 'Gold/Silver/Crystal':
+      return 'gold-silver'
+    case 'Ruby/Sapphire/Emerald':
+      return 'ruby-sapphire'
+    case 'Diamond/Pearl':
+      return 'diamond-pearl'
+    case 'Platinum':
+      return 'platinum'
+    case 'HeartGold/SoulSilver':
+      return 'heartgold-soulsilver'
+    case 'Black/White':
+      return 'black-white'
+    case 'Black 2/White 2':
+      return 'black-2-white-2'
+    case 'X/Y (Central)':
+    case 'X/Y (Coastal)':
+    case 'X/Y (Mountain)':
+      return 'x-y'
+    case 'Omega Ruby/Alpha Sapphire':
+      return  'omega-ruby-alpha-sapphire'
+    case 'Sun/Moon (Alola)':
+    case 'Sun/Moon (Melemele)':
+    case 'Sun/Moon (Akala)':
+    case 'Sun/Moon (Ula\'ula)':
+    case 'Sun/Moon (Poni)':
+      return 'sun-moon'
+    case 'Ultra Sun/Ultra Moon (Alola)':
+    case 'Ultra Sun/Ultra Moon (Melemele)':
+    case 'Ultra Sun/Ultra Moon (Akala)':
+    case 'Ultra Sun/Ultra Moon (Ula\'ula)':
+    case 'Ultra Sun/Ultra Moon (Poni)':
+      return 'ultra-sun-ultra-moon'
+    case 'Let\'s Go: Pikachu/Let\'s Go: Eevee/':
+      return 'lets-go-pikachu-lets-go-eevee'
+    case 'Sword/Shield (Galar)':
+    case 'Sword/Shield (Isle of Armor)':
+    case 'Sword/Shield (Crown Tundra)':
+      return 'sword-shield'
+    case 'Legends Arceus':
+      return 'red-blue'
+    case 'Scarlet/Violet':
+      return 'scarlet-violet'
+  }
+}
+
 const isLoading = ref<boolean>(false)
 const isOpen = ref<boolean>(false)
 const currentVersion = useState<string>('currentVersion', () => '')
+const selectedVersionParam = useState<string>('selectedVersionParam', () => '')
+watch(currentVersion, (newValue: string) => {
+  console.log(newValue)
+  selectedVersionParam.value = determineParam(newValue)
+  console.log(selectedVersionParam.value)
+})
 const pokedexInfo = useState<any>('pokedexInfo', () => [])
 
 const fetchPokemonSpecies = (name: string) => {
@@ -66,7 +121,7 @@ const getPokedexInfo = (id: number, version: string) => {
 <template>
   <div>
     <div>
-      <UButton label="Choose a Pokédex version" @click="isOpen = true" class="text-xl m-1" />
+      <UButton label="Pokédex Version" @click="isOpen = true" class="text-xl m-1" />
       <div v-if="currentVersion" class="p-1 mt-4" >
         <span class="text-2xl font-bold bg-gray-200 p-1 rounded">{{ currentVersion }}</span>
       </div>
@@ -81,7 +136,7 @@ const getPokedexInfo = (id: number, version: string) => {
             <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>
             <h4 class="text-xl font-bold mt-2">{{ capitalizeName(pokemon.name) }}</h4>
           </template>
-          <NuxtLink :to="`/pokedex/${pokemon.name}`">
+          <NuxtLink :to="`/pokedex/${pokemon.name}?version=${selectedVersionParam}`">
             <UButton color="gray" class="mx-2">
               <img :src="pokemon.image" width="300" height="400">
             </UButton>

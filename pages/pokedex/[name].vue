@@ -5,17 +5,24 @@ definePageMeta({
 })
 
 const { name } = useRoute().params
+const { query } = useRoute()
+console.log(query)
 const formattedName = capitalizeName(name as string)
 console.log(name)
 
-const currentVersion = ref<string>('gold-silver')
+const currentVersion = query.version
+console.log(currentVersion)
 
 const showDetails = ref<boolean>(false)
-const showWhatSection = ref<string>('moves')
+const showWhatSection = ref<string>('stats')
 const id = ref<string>('')
 const basicInfo = ref<any>({})
 const speciesInfo = ref({})
-const moves = ref<Move[]>([])
+
+interface Stat {
+  name: string,
+  base: number
+}
 
 interface APIMove {
   move: any,
@@ -27,6 +34,40 @@ interface Move {
   level: number
 }
 
+const stats = ref<Stat[]>([])
+const moves = ref<Move[]>([])
+
+const getStats = (res: any) => {
+  const baseFiveStats =  res.stats.map((stat: any) => {
+    return { name: capitalizeVersion(stat.stat.name), base: stat.base_stat }
+  })
+  baseFiveStats.push({ name: 'Total', base: baseFiveStats.reduce((acc: number, cur: Stat) => {
+    return acc + cur.base
+  }, 0)})
+
+  return baseFiveStats
+}
+
+const getMoves = (res: any) => {
+  return res.moves
+    .map((move: APIMove) => {
+      const versionDetail = move.version_group_details.find(
+        detail =>
+          detail.version_group.name === currentVersion &&
+          detail.move_learn_method.name === 'level-up'
+      )
+
+      if (!versionDetail) return null
+
+      return {
+        name: capitalizeVersion(move.move.name),
+        level: versionDetail ? versionDetail.level_learned_at : null
+      }
+    })
+    .filter((move: Move) => move !== null)
+    .sort((a: Move, b: Move) => a.level - b.level)
+}
+
 onMounted(() => {
   $.ajax({
     url: `https://pokeapi.co/api/v2/pokemon/${name}`,
@@ -35,18 +76,11 @@ onMounted(() => {
     success: (res) => {
       console.log(res.moves.length)
       basicInfo.value = res
-      moves.value = res.moves.map((move: APIMove) => {
-        const versionDetail = move.version_group_details.find(detail => {
-          return detail.version_group.name === currentVersion.value && detail.move_learn_method.name === 'level-up'
-        })
 
-        if (!versionDetail) return null
-        return {
-          name: capitalizeVersion(move.move.name),
-          level: versionDetail ? versionDetail.level_learned_at : null 
-        }
-      }).filter((move: Move) => move !== null).sort((a: Move, b: Move) => a.level - b.level)
-      console.log(detailLists.value[0].content)
+      stats.value = getStats(res)
+      moves.value = getMoves(res)
+      console.log(stats.value)
+      console.log(moves.value)
     },
     error: (error) => {
       console.log(error)
@@ -111,11 +145,11 @@ const detailLists = ref([
             <div class="flex gap-4">
               <div>
                 <span class="bg-green-400 p-1 rounded">Height</span>
-                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.height }}</span>
+                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.height / 10 }} m</span>
               </div>
               <div>
                 <span class="bg-green-400 p-1 rounded">Weight</span>
-                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.weight }}</span>
+                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.weight / 10 }} kg</span>
               </div>
             </div>
           </div>
@@ -124,13 +158,15 @@ const detailLists = ref([
           </div>
         </main>
       </UCard>
-      <UCard v-if="showDetails" class="w-[30%] mx-auto move-left transition-transform duration-500 ease-in-out">
+      <UCard v-if="showDetails" :class="{ 'move-left': showDetails }" class="w-[30%] mx-auto transition-transform duration-500 ease-in-out">
         <main class="text-lg">
           <nav class="flex gap-2">
+            <UButton class="text-lg" @click="showWhatSection = 'stats'">Stats</UButton>
             <UButton class="text-lg" @click="showWhatSection = 'moves'">Moves</UButton>
             <UButton class="text-lg" @click="showWhatSection = 'locations'">Locations</UButton>
           </nav>
-          <UTable v-if="showWhatSection === 'moves'" :rows="moves" />
+          <UTable v-if="showWhatSection === 'stats'" :rows="stats"/>
+          <UTable v-if="showWhatSection === 'moves'" :rows="moves" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
           <UTable v-if="showWhatSection === 'locations'" />
         </main>
       </UCard>
@@ -139,6 +175,19 @@ const detailLists = ref([
 </template>
 
 <style scoped>
+.custom-scroll::-webkit-scrollbar {
+  height: 0.5rem;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #dee2e6;
+  border-radius: 15px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background-color: #f1f3f5;
+}
+
 .move-right {
   transform: translateX(15%);
 }

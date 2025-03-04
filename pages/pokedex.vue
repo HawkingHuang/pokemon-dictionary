@@ -31,7 +31,8 @@ const fetchPokemonSpecies = (name: string) => {
   })
 }
 
-const getPokedexInfo = (id: number) => {
+const getPokedexInfo = (id: number, version: string) => {
+  currentVersion.value = ''
   pokedexInfo.value = []
   isLoading.value = true
   return new Promise((resolve, reject) => {
@@ -51,6 +52,7 @@ const getPokedexInfo = (id: number) => {
         pokedexInfo.value = unorderedPokemonList
         resolve(res)
         isLoading.value = false
+        currentVersion.value = version
         isOpen.value = false
       },
       error: (error) => {
@@ -65,8 +67,10 @@ const getPokedexInfo = (id: number) => {
 <template>
   <div>
     <div>
-      <UButton label="Choose a Pokédex version" @click="isOpen = true" class="text-xl" />
-      <h2>{{ currentVersion }}</h2>
+      <UButton label="Choose a Pokédex version" @click="isOpen = true" class="text-xl m-1" />
+      <div class="p-1 mt-4" v-if="currentVersion">
+        <span class="text-2xl font-bold bg-gray-200 p-1 rounded">{{ currentVersion }}</span>
+      </div>
       <UCommandPalette v-if="isLoading" loading :empty-state="{ icon: '', label: '', queryLabel: '' }" />
 
       <div v-else class="grid grid-cols-8 mt-4 p-2 gap-2 max-h-[80vh] overflow-y-auto custom-scroll animate">
@@ -91,88 +95,88 @@ const getPokedexInfo = (id: number) => {
           </template>
   
           <div class="flex flex-col gap-4 max-h-[80vh] overflow-y-auto custom-scroll">
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(2)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(2, 'Red/Blue/Yellow')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-red-500">Red</span> <span class="text-blue-500">Blue</span> <span class="text-yellow-500">Yellow</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(3)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(3, 'Gold/Silver/Crystal')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-yellow-300">Gold</span> <span class="text-gray-300">Silver</span> <span class="text-purple-500">Crystal</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(4)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(4, 'Ruby/Sapphire/Emerald')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-red-500">Ruby</span> <span class="text-blue-700">Sapphire</span> <span class="text-emerald-500">Emerald</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(5)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(5, 'Diamond/Pearl')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-stone-400">Diamond</span> <span class="text-fuchsia-400">Pearl</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(6)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(6, 'Platinum')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-neutral-500">Platinum</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(7)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(7, 'HeartGold/SoulSilver')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-yellow-300">HeartGold</span> <span class="text-gray-300">SoulSilver</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(8)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(8, 'Black/White')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-black">Black</span> <span class="text-gray-200">White</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(9)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(9, 'Black 2/White 2')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-black">Black 2</span> <span class="text-gray-200">White 2</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(12)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(12, 'X/Y (Central)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-slate-600">X</span> <span class="text-red-700">Y</span> (Central)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(13)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(13, 'X/Y (Coastal)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-slate-600">X</span> <span class="text-red-700">Y</span> (Coastal)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(14)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(14, 'X/Y (Mountain)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-slate-600">X</span> <span class="text-red-700">Y</span> (Mountain)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(15)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(15, 'Omega Ruby/Alpha Sapphire')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-red-500">Omega Ruby</span> <span class="text-blue-700">Alpha Sapphire</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(16)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(16, 'Sun/Moon (Alola)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Sun</span> <span class="text-gray-300">Moon</span> (Alola)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(17)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(17, 'Sun/Moon (Melemele)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Sun</span> <span class="text-gray-300">Moon</span> (Melemele)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(18)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(18, 'Sun/Moon (Akala)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Sun</span> <span class="text-gray-300">Moon</span> (Akala)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(19)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(19, 'Sun/Moon (Ula\'ula)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Sun</span> <span class="text-gray-300">Moon</span> (Ula'ula)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(20)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(20, 'Sun/Moon (Poni)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Sun</span> <span class="text-gray-300">Moon</span> (Poni)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(21)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(21, 'Ultra Sun/Ultra Moon (Alola)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Ultra Sun</span> <span class="text-gray-300">Ultra Moon</span> (Alola)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(22)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(22, 'Ultra Sun/Ultra Moon (Melemele)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Ultra Sun</span> <span class="text-gray-300">Ultra Moon</span> (Melemele)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(23)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(23, 'Ultra Sun/Ultra Moon (Akala)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Ultra Sun</span> <span class="text-gray-300">Ultra Moon</span> (Akala)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(24)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(24, 'Ultra Sun/Ultra Moon (Ula\'ula)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Ultra Sun</span> <span class="text-gray-300">Ultra Moon</span> (Ula'ula)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(25)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(25, 'Ultra Sun/Ultra Moon (Poni)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-500">Ultra Sun</span> <span class="text-gray-300">Ultra Moon</span> (Poni)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(26)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(26, 'Let\'s Go: Pikachu/Let\'s Go: Eevee/')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-yellow-500">Let's Go: Pikachu</span> <span class="text-amber-800">Let's Go: Eevee</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(27)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(27, 'Sword/Shield (Galar)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-blue-400">Sword</span> <span class="text-pink-400">Shield</span> (Galar)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(28)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(28, 'Sword/Shield (Isle of Armor)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-blue-400">Sword</span> <span class="text-pink-400">Shield</span> (Isle of Armor)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(29)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(29, 'Sword/Shield (Crown Tundra)')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-blue-400">Sword</span> <span class="text-pink-400">Shield</span> (Crown Tundra)
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(30)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(30, 'Legends Arceus')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-cyan-500">Legends Arceus</span>
             </UButton>
-            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(31)">
+            <UButton class="text-lg mr-1" color="white" @click="getPokedexInfo(31, 'Scarlet/Violet')">
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" /><span class="text-orange-400">Scarlet</span> <span class="text-purple-400">Violet</span>
             </UButton>
           </div>
@@ -206,7 +210,6 @@ const getPokedexInfo = (id: number) => {
 }
 
 .animate {
-  animation: fadeIn 1.2s ease-in;
+  animation: fadeIn 1.5s ease-in;
 }
-
 </style>

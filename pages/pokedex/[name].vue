@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { capitalizeVersion, capitalizeName } from '@/utils/capitalize'
+import { capitalizeVersion, capitalizeName, capitalizeLocation, capitalizeLocationVersion } from '@/utils/capitalize'
 definePageMeta({
   layout: 'base-layout'
 })
@@ -13,6 +13,7 @@ console.log(name)
 const currentVersion = query.version
 console.log(currentVersion)
 
+const isLoading = ref<boolean>(true)
 const showDetails = ref<boolean>(false)
 const showWhatSection = ref<string>('stats')
 const id = ref<string>('')
@@ -34,8 +35,14 @@ interface Move {
   level: number
 }
 
+interface Location {
+  location: string,
+  version: string
+}
+
 const stats = ref<Stat[]>([])
 const moves = ref<Move[]>([])
+const locations = ref<Location[]>([])
 
 const getStats = (res: any) => {
   const baseFiveStats =  res.stats.map((stat: any) => {
@@ -68,19 +75,47 @@ const getMoves = (res: any) => {
     .sort((a: Move, b: Move) => a.level - b.level)
 }
 
+const getLocations = (res: any): any => {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `https://pokeapi.co/api/v2/pokemon/${res.id}/encounters`,
+      type: 'GET',
+      dataType: 'json',
+      success: (res) => {
+        console.log(res)
+        resolve(res)
+      },
+      error: (error) => {
+        console.log(error)
+        reject(error)
+      }
+    })
+  })
+}
+
 onMounted(() => {
+  isLoading.value = true
   $.ajax({
     url: `https://pokeapi.co/api/v2/pokemon/${name}`,
     type: 'GET',
     dataType: 'json',
-    success: (res) => {
-      console.log(res.moves.length)
+    success: async (res) => {
+      console.log(res)
       basicInfo.value = res
 
       stats.value = getStats(res)
       moves.value = getMoves(res)
-      console.log(stats.value)
-      console.log(moves.value)
+      const rawLocations = await getLocations(res)
+      locations.value = rawLocations.map((location: any) => {
+        const versions = location.version_details.map((version: any) => {
+          return version.version.name
+        } )
+        return { version: capitalizeLocationVersion(versions), location: capitalizeLocation(location.location_area.name) }
+      })
+      console.log(locations.value)
+      // console.log(stats.value)
+      // console.log(moves.value)
+      isLoading.value = false
     },
     error: (error) => {
       console.log(error)
@@ -104,6 +139,11 @@ onMounted(() => {
 const displayDetails = () => {
   showDetails.value = true
 }
+
+const hideDetails = () => {
+  showDetails.value = false
+}
+
 const detailLists = ref([
   {
     label: 'Moves',
@@ -121,7 +161,7 @@ const detailLists = ref([
 <template>
   <div>
     <div class="flex">
-      <UCard :class="{ 'move-right': showDetails }" class="w-[30%] mx-auto transition-transform duration-500 ease-in-out">
+      <UCard v-if="!isLoading" :class="{ 'move-left': showDetails }" class="w-[30%] mx-auto transition-transform duration-500 ease-in-out animate">
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ formattedName }}</h4>
@@ -154,20 +194,21 @@ const detailLists = ref([
             </div>
           </div>
           <div class="flex justify-center mt-4">
-            <UButton @click="displayDetails" class="text-lg">More Information</UButton>
+            <UButton v-if="!showDetails" @click="displayDetails" class="text-lg">More Information</UButton>
+            <UButton v-else @click="hideDetails" class="text-lg">Close Details</UButton>
           </div>
         </main>
       </UCard>
-      <UCard v-if="showDetails" :class="{ 'move-left': showDetails }" class="w-[30%] mx-auto transition-transform duration-500 ease-in-out">
+      <UCard v-if="showDetails" :class="{ 'move-left': showDetails }" class="w-[40%] mx-auto transition-transform duration-500 ease-in-out">
         <main class="text-lg">
           <nav class="flex gap-2">
-            <UButton class="text-lg" @click="showWhatSection = 'stats'">Stats</UButton>
-            <UButton class="text-lg" @click="showWhatSection = 'moves'">Moves</UButton>
-            <UButton class="text-lg" @click="showWhatSection = 'locations'">Locations</UButton>
+            <UButton class="text-lg" @click="showWhatSection = 'stats'"><UIcon name="gridicons:stats" class="w-5 h-5" />Stats</UButton>
+            <UButton class="text-lg" @click="showWhatSection = 'moves'"><UIcon name="charm:sword" class="w-5 h-5" />Moves</UButton>
+            <UButton v-if="locations.length > 0" class="text-lg" @click="showWhatSection = 'locations'"><UIcon name="material-symbols:location-on-outline-rounded" class="w-5 h-5" />Locations</UButton>
           </nav>
           <UTable v-if="showWhatSection === 'stats'" :rows="stats"/>
           <UTable v-if="showWhatSection === 'moves'" :rows="moves" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
-          <UTable v-if="showWhatSection === 'locations'" />
+          <UTable v-if="showWhatSection === 'locations'" :rows="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
         </main>
       </UCard>
     </div>
@@ -186,6 +227,19 @@ const detailLists = ref([
 
 .custom-scroll::-webkit-scrollbar-track {
   background-color: #f1f3f5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate {
+  animation: fadeIn 1.2s ease-in;
 }
 
 .move-right {

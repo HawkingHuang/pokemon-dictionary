@@ -37,3 +37,21 @@ export const capitalizeRegions = (regions: Region[]): string => {
 export const capitalizeName = (name: string): string => {
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
+
+export const capitalizeLocation = (location: string): string => {
+  return location
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+export const capitalizeLocationVersion = (versions: string[]): string => {
+  return (versions.map((version: string) => {
+    if(version.includes('-')) {
+      const firstPartStr = version.split('-')[0].charAt(0).toUpperCase() + version.split('-')[0].slice(1)
+      const secondPartStr = version.split('-')[1].charAt(0).toUpperCase() + version.split('-')[1].slice(1)
+      return `${firstPartStr} ${secondPartStr}`
+    }
+    return version.charAt(0).toUpperCase() + version.slice(1)
+  })).join('/')
+}

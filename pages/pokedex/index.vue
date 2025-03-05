@@ -50,6 +50,8 @@ const determineParam = (version: string): string => {
       return 'red-blue'
     case 'Scarlet/Violet':
       return 'scarlet-violet'
+    default:
+      return ''
   }
 }
 

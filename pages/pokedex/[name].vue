@@ -6,19 +6,15 @@ definePageMeta({
 
 const { name } = useRoute().params
 const { query } = useRoute()
-console.log(query)
 const formattedName = capitalizeName(name as string)
-console.log(name)
 
 const currentVersion = query.version
-console.log(currentVersion)
 
 const isLoading = ref<boolean>(true)
 const showDetails = ref<boolean>(false)
 const showWhatSection = ref<string>('stats')
 const id = ref<string>('')
 const basicInfo = ref<any>({})
-const speciesInfo = ref({})
 
 interface Stat {
   name: string,
@@ -82,7 +78,6 @@ const getLocations = (res: any): any => {
       type: 'GET',
       dataType: 'json',
       success: (res) => {
-        console.log(res)
         resolve(res)
       },
       error: (error) => {
@@ -100,7 +95,7 @@ onMounted(() => {
     type: 'GET',
     dataType: 'json',
     success: async (res) => {
-      console.log(res)
+      id.value = res.id
       basicInfo.value = res
 
       stats.value = getStats(res)
@@ -112,23 +107,8 @@ onMounted(() => {
         } )
         return { version: capitalizeLocationVersion(versions), location: capitalizeLocation(location.location_area.name) }
       })
-      console.log(locations.value)
-      // console.log(stats.value)
-      // console.log(moves.value)
-      isLoading.value = false
-    },
-    error: (error) => {
-      console.log(error)
-    }
-  })
 
-  $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon-species/${name}`,
-    type: 'GET',
-    dataType: 'json',
-    success: (res) => {
-      id.value = res.id
-      console.log(id.value)
+      isLoading.value = false
     },
     error: (error) => {
       console.log(error)
@@ -143,19 +123,6 @@ const displayDetails = () => {
 const hideDetails = () => {
   showDetails.value = false
 }
-
-const detailLists = ref([
-  {
-    label: 'Moves',
-    icon: 'lucide:sword',
-    content: []
-  },
-  {
-    label: 'Locations',
-    icon: 'lucide:sword',
-    content: []
-  }
-])
 </script>
 
 <template>

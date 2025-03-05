@@ -60,9 +60,7 @@ const isOpen = ref<boolean>(false)
 const currentVersion = useState<string>('currentVersion', () => '')
 const selectedVersionParam = useState<string>('selectedVersionParam', () => '')
 watch(currentVersion, (newValue: string) => {
-  console.log(newValue)
   selectedVersionParam.value = determineParam(newValue)
-  console.log(selectedVersionParam.value)
 })
 const pokedexInfo = useState<any>('pokedexInfo', () => [])
 

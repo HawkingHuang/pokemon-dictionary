@@ -5,7 +5,11 @@ definePageMeta({
 })
 
 interface Stat {
-  name: string,
+  stat: string,
+  base: number
+}
+
+interface StatCompare {
   base: number
 }
 
@@ -23,19 +27,20 @@ const getStats = (res: any) => {
 const firstPokemonInput = ref<string>('')
 const firstPokemonBasicInfo = ref<any>({})
 const firstPokemonStats = ref<Stat[]>([])
+const firstPokemonStatsForCompare = ref<StatCompare[]>([])
 const showFirstPokemon = ref<boolean>(false)
 const searchFirstPokemon = async (pokemon: string) => {
-  // if(firstPokemonStats.value.length === 0) {
-  //   showFirstPokemon.value = false
-  // }
   $.ajax({
     url: `https://pokeapi.co/api/v2/pokemon/${pokemon}`,
     type: 'GET',
     dataType: 'json',
     success: (res) => {
-      console.log(res)
       firstPokemonBasicInfo.value = res
       firstPokemonStats.value = getStats(res)
+      firstPokemonStatsForCompare.value = firstPokemonStats.value.map((stat: Stat) => {
+        return { base: stat.base }
+      })
+
       showFirstPokemon.value = true
     },
     error: (error) => {
@@ -47,6 +52,7 @@ const searchFirstPokemon = async (pokemon: string) => {
 const secondPokemonInput = ref<string>('')
 const secondPokemonBasicInfo = ref<any>({})
 const secondPokemonStats = ref<Stat[]>([])
+const secondPokemonStatsForCompare = ref<StatCompare[]>([])
 const showSecondPokemon = ref<boolean>(false)
 const searchSecondPokemon = async (pokemon: string) => {
   showSecondPokemon.value = false
@@ -55,9 +61,12 @@ const searchSecondPokemon = async (pokemon: string) => {
     type: 'GET',
     dataType: 'json',
     success: (res) => {
-      console.log(res)
       secondPokemonBasicInfo.value = res
       secondPokemonStats.value = getStats(res)
+      secondPokemonStatsForCompare.value = secondPokemonStats.value.map((stat: Stat) => {
+        return { base: stat.base }
+      })
+
       showSecondPokemon.value = true
     },
     error: (error) => {
@@ -74,17 +83,39 @@ onMounted(() => {
     type: 'GET',
     dataType: 'json',
     success: (res) => {
-      console.log(res)
       pokemonSearchList.value = res.results.map((pokemon: any) => {
         return capitalizeName(pokemon.name)
       })
-      console.log(pokemonSearchList.value)
     },
     error: (error) => {
       console.log(error)
     }
   })
 })
+
+const isOpen = ref<boolean>(false)
+const comparePokemons = () => {
+  statDifferences.value = []
+  calculateDifferences(firstPokemonStats.value, secondPokemonStats.value)
+  isOpen.value = true
+}
+
+interface StatDiff {
+  stat: string
+}
+
+const statDifferences = ref<StatDiff[]>([])
+const calculateDifferences = (first: Stat[], second: Stat[]) => {
+  for(let i = 0; i < first.length; i++) {
+    const diff = second[i].base - first[i].base
+    if (diff > 0) {
+      statDifferences.value.push({ stat: first[i].stat + ' ' + '+' + String(diff) }) 
+    } else {
+      statDifferences.value.push({ stat: first[i].stat + ' ' + String(diff) }) 
+    }
+  }
+}
+
 </script>
 
 <template>
@@ -142,7 +173,7 @@ onMounted(() => {
         </main>
       </UCard>
       <UCard v-if="showSecondPokemon" class="animate relative">
-        <UButton class="absolute top-4 right-4" color="yellow">Compare</UButton>
+        <UButton @click="comparePokemons" class="absolute top-4 right-4" color="yellow">Compare</UButton>
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ secondPokemonBasicInfo.id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ capitalizeName(secondPokemonBasicInfo.name) }}</h4>
@@ -183,6 +214,20 @@ onMounted(() => {
           </div>
         </main>
       </UCard>
+      <UModal v-model="isOpen" class="p-2">
+        <div class="grid grid-cols-3">
+          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="">
+          <div class="flex items-center justify-center">
+            <UIcon name="material-symbols:keyboard-double-arrow-right-rounded" class="w-8 h-8 animate-slide" />
+          </div>
+          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="">
+        </div>
+        <div class="grid grid-cols-3">
+          <UTable :rows="firstPokemonStatsForCompare" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"/>
+          <UTable :rows="statDifferences" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"></UTable>
+          <UTable :rows="secondPokemonStatsForCompare" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"/>
+        </div>
+      </UModal>
     </div>
   </div>
 </template>
@@ -200,5 +245,21 @@ onMounted(() => {
 
 .animate {
   animation: fadeIn 1.2s ease-in;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(-10px);
+  }
+}
+
+.animate-slide {
+  animation: slide 1.5s ease-in-out infinite;
 }
 </style>

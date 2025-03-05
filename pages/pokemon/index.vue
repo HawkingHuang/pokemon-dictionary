@@ -123,11 +123,11 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
     <div class="grid grid-cols-2 gap-2 mt-4">
       <div class="flex gap-2 max-w-[400px]">
         <UInputMenu v-model="firstPokemonInput" :options="pokemonSearchList" placeholder="Type/select a Pokémon" size="xl" class="w-[250px]"/>
-        <UButton @click="searchFirstPokemon(firstPokemonInput)" size="md">Search</UButton>
+        <UButton @click="searchFirstPokemon(firstPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
       <div v-if="showFirstPokemon" class="flex gap-2 max-w-[400px]">
         <UInputMenu v-model="secondPokemonInput" :options="pokemonSearchList" placeholder="Type/select a Pokémon" size="xl" class="w-[250px]"/>
-        <UButton @click="searchSecondPokemon(secondPokemonInput)" size="md">Search</UButton>
+        <UButton @click="searchSecondPokemon(secondPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
     </div>
     <div class="grid grid-cols-2 gap-2 mt-4">
@@ -173,7 +173,7 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
         </main>
       </UCard>
       <UCard v-if="showSecondPokemon" class="animate relative">
-        <UButton @click="comparePokemons" class="absolute top-4 right-4" color="yellow">Compare</UButton>
+        <UButton @click="comparePokemons" class="absolute top-4 right-4" color="yellow" size="md"><UIcon name="material-symbols:compare-arrows" class="w-6 h-6 mr-1" />Compare</UButton>
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ secondPokemonBasicInfo.id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ capitalizeName(secondPokemonBasicInfo.name) }}</h4>

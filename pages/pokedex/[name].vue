@@ -42,9 +42,9 @@ const locations = ref<Location[]>([])
 
 const getStats = (res: any) => {
   const baseFiveStats =  res.stats.map((stat: any) => {
-    return { name: capitalizeVersion(stat.stat.name), base: stat.base_stat }
+    return { stat: capitalizeVersion(stat.stat.name), base: stat.base_stat }
   })
-  baseFiveStats.push({ name: 'Total', base: baseFiveStats.reduce((acc: number, cur: Stat) => {
+  baseFiveStats.push({ stat: 'Total', base: baseFiveStats.reduce((acc: number, cur: Stat) => {
     return acc + cur.base
   }, 0)})
 

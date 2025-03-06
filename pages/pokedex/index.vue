@@ -130,7 +130,7 @@ const getPokedexInfo = (id: number, version: string) => {
       </div>
 
       <UCommandPalette v-if="isLoading" loading :empty-state="{ icon: '', label: '', queryLabel: '' }" />
-      <div v-else class="grid grid-cols-8 mt-4 p-2 gap-2 max-h-[80vh] overflow-y-auto custom-scroll animate">
+      <div v-else class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8  mt-4 p-2 gap-2 max-h-[80vh] overflow-y-auto custom-scroll animate">
         <UCard v-for="pokemon in pokedexInfo" :key="pokemon.id">
           <template #header>
             <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>

@@ -120,7 +120,7 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
 
 <template>
   <div>
-    <div class="grid grid-cols-2 gap-2 mt-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
       <div class="flex gap-2 max-w-[400px]">
         <UInputMenu v-model="firstPokemonInput" :options="pokemonSearchList" placeholder="Type/select a Pokémon" size="xl" class="w-[250px]"/>
         <UButton @click="searchFirstPokemon(firstPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
@@ -130,7 +130,7 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
         <UButton @click="searchSecondPokemon(secondPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-2 mt-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
       <UCard v-if="showFirstPokemon" class="animate">
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ firstPokemonBasicInfo.id }}</span>
@@ -139,7 +139,7 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
         </template>
 
         <main class="text-lg">
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Type</span>
@@ -181,7 +181,7 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
         </template>
 
         <main class="text-lg">
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Type</span>

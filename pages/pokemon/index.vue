@@ -31,7 +31,7 @@ const firstPokemonStatsForCompare = ref<StatCompare[]>([])
 const showFirstPokemon = ref<boolean>(false)
 const searchFirstPokemon = async (pokemon: string) => {
   $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon/${pokemon}`,
+    url: `https://pokeapi.co/api/v2/pokemon/${pokemon.toLowerCase()}`,
     type: 'GET',
     dataType: 'json',
     success: (res) => {
@@ -57,7 +57,7 @@ const showSecondPokemon = ref<boolean>(false)
 const searchSecondPokemon = async (pokemon: string) => {
   showSecondPokemon.value = false
   $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon/${pokemon}`,
+    url: `https://pokeapi.co/api/v2/pokemon/${pokemon.toLowerCase()}`,
     type: 'GET',
     dataType: 'json',
     success: (res) => {

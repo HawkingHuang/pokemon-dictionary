@@ -8,19 +8,11 @@ export default {
     extend: {
       screens: {
         xxl: '1920px',
-        xl: {
-          max: '1439px'
-        },
-        lg: {
-          max: '1279px'
-        },
-        md: {
-          max: '1023px'
-        },
-        sm: {
-          max: '767px'
-        }
-      },
+        xl: '1440px',
+        lg: '1280px',
+        md: '1024px',
+        sm: '768px'
+      }
     }
-  },
+  }
 }

@@ -96,17 +96,17 @@ const getVersionInfo = async (id: number) => {
   <div>
     <UCarousel ref="carouselRef" v-slot="{ item }" :items="items" class="mb-4">
       <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img :src="item.image" width="300" height="400" draggable="false">
+        <img :src="item.image" class="w-[100px] md:w-[200px] lg:w-[300px] " draggable="false">
       </UButton>
     </UCarousel>
     <UCarousel ref="carouselRef2" v-slot="{ item }" :items="itemsSecondRow" class="mb-4">
       <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img :src="item.image" width="300" height="400" draggable="false">
+        <img :src="item.image" class="w-[100px] md:w-[200px] lg:w-[300px] " draggable="false">
       </UButton>
     </UCarousel>
     <UCarousel ref="carouselRef3" v-slot="{ item }" :items="itemsThirdRow" class="mb-4">
       <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img :src="item.image" draggable="false" class="w-[225px] h-[400px]">
+        <img :src="item.image" class="w-[75px] md:w-[150px] lg:w-[225px]" draggable="false">
       </UButton>
     </UCarousel>
     <UModal v-model="isOpen" :ui="{background: 'bg-gradient-to-tr from-gray-100 to-gray-300'}">

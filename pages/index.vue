@@ -9,7 +9,7 @@ definePageMeta({
     <div class="relative bg-cover bg-center rounded">
       <div class="absolute bg-fixed inset-0 bg-[url('/images/backgrounds/home_background.jpg')] bg-cover bg-center opacity-25 rounded-lg"></div>
       
-      <div class="relative z-10 p-1 mt-4 animate">
+      <div class="relative z-10 p-1 animate">
         <div class="min-h-[800px] text-center">
           <h1 class="text-5xl font-bold my-8">Pokémon Dictionary: An Experimental Pokémon Introductory Guide</h1>
           <p class="text-3xl font-bold mt-20">Pokémon Dictionary is a handbook for players who are not familiar with the world of Pokémon.</p>

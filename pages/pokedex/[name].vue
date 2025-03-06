@@ -127,8 +127,8 @@ const hideDetails = () => {
 
 <template>
   <div>
-    <div class="flex">
-      <UCard v-if="!isLoading" :class="{ 'move-left': showDetails }" class="w-[30%] mx-auto transition-transform duration-500 ease-in-out animate">
+    <div class="grid grid-cols-1 gap-4 xl:flex">
+      <UCard v-if="!isLoading" class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto transition-transform duration-500 ease-in-out animate">
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ formattedName }}</h4>
@@ -137,26 +137,26 @@ const hideDetails = () => {
 
         <main class="text-lg">
           <div class="border rounded p-4 mb-2">
-            <span class="bg-green-400 p-1 rounded">Type</span>
-            <span v-for="type in basicInfo.types" :key="type.type.name" class="bg-gray-200 p-1 rounded ml-1">{{ capitalizeName(type.type.name) }}</span>
+            <span class="bg-green-400 p-1 rounded inline-block">Type</span>
+            <span v-for="type in basicInfo.types" :key="type.type.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeName(type.type.name) }}</span>
           </div>
           <div class="border rounded p-4 mb-2">
-            <span class="bg-green-400 p-1 rounded">Abilities</span>
-            <span v-for="ability in basicInfo.abilities" :key="ability.ability" class="bg-gray-200 p-1 rounded ml-1">{{ capitalizeVersion(ability.ability.name) }}</span>
+            <span class="bg-green-400 p-1 rounded inline-block">Abilities</span>
+            <span v-for="ability in basicInfo.abilities" :key="ability.ability" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(ability.ability.name) }}</span>
           </div>
           <div class="border rounded p-4 mb-2">
-            <span class="bg-green-400 p-1 rounded">Held Items</span>
-            <span v-for="item in basicInfo.held_items" :key="item.item.name" class="bg-gray-200 p-1 rounded ml-1">{{ capitalizeVersion(item.item.name) }}</span>
+            <span class="bg-green-400 p-1 rounded inline-block">Held Items</span>
+            <span v-for="item in basicInfo.held_items" :key="item.item.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(item.item.name) }}</span>
           </div>
           <div class="border rounded p-4 mb-2">
             <div class="flex gap-4">
               <div>
-                <span class="bg-green-400 p-1 rounded">Height</span>
-                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.height / 10 }} m</span>
+                <span class="bg-green-400 p-1 rounded inline-block">Height</span>
+                <span class="bg-gray-200 p-1 rounded ml-1 inline-block">{{ basicInfo.height / 10 }} m</span>
               </div>
               <div>
-                <span class="bg-green-400 p-1 rounded">Weight</span>
-                <span class="bg-gray-200 p-1 rounded ml-1">{{ basicInfo.weight / 10 }} kg</span>
+                <span class="bg-green-400 p-1 rounded inline-block">Weight</span>
+                <span class="bg-gray-200 p-1 rounded ml-1 inline-block">{{ basicInfo.weight / 10 }} kg</span>
               </div>
             </div>
           </div>
@@ -166,7 +166,7 @@ const hideDetails = () => {
           </div>
         </main>
       </UCard>
-      <UCard v-if="showDetails" :class="{ 'move-left': showDetails }" class="w-[40%] mx-auto transition-transform duration-500 ease-in-out">
+      <UCard v-if="showDetails" class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto transition-transform duration-500 ease-in-out">
         <main class="text-lg">
           <nav class="flex gap-2">
             <UButton class="text-lg" @click="showWhatSection = 'stats'"><UIcon name="gridicons:stats" class="w-5 h-5" />Stats</UButton>

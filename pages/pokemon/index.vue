@@ -108,7 +108,7 @@ const statDifferences = ref<StatDiff[]>([])
 const calculateDifferences = (first: Stat[], second: Stat[]) => {
   for(let i = 0; i < first.length; i++) {
     const diff = second[i].base - first[i].base
-    if (diff > 0) {
+    if (diff >= 0) {
       statDifferences.value.push({ stat: first[i].stat + ' ' + '+' + String(diff) }) 
     } else {
       statDifferences.value.push({ stat: first[i].stat + ' ' + String(diff) }) 

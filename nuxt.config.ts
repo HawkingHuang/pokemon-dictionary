@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   plugins: ['~/plugins/jquery.client.ts'],
   app: {
     head: {
-      title: 'Pokemon Dictionary',
+      title: 'Pokémon Dictionary',
       meta: [
         { name: 'description', content: 'An Experimental Pokémon Elementary Guide' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' }

@@ -1,3 +1,10 @@
+<script setup lang="ts">
+onMounted(() => {
+  document.documentElement.classList.add('light')
+  document.documentElement.classList.remove('dark')
+})
+</script>
+
 <template>
   <div>
     <navbar />

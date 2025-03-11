@@ -86,6 +86,11 @@ const fetchPokemonSpecies = (name: string) => {
 }
 
 const getPokedexInfo = (id: number, version: string) => {
+  const lazyImages = document.getElementsByClassName('lazy-img')
+  for(let i = 0; i < lazyImages.length; i++) {
+    lazyImages[i].classList.remove('loaded')
+  }
+
   currentVersion.value = ''
   pokedexInfo.value = []
   isLoading.value = true
@@ -117,6 +122,11 @@ const getPokedexInfo = (id: number, version: string) => {
   })
 }
 
+const imageLoaded = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  target.classList.add('loaded')
+}
+
 </script>
 <template>
   <div>
@@ -138,7 +148,7 @@ const getPokedexInfo = (id: number, version: string) => {
           </template>
           <NuxtLink :to="`/pokedex/${pokemon.name}?version=${selectedVersionParam}`">
             <UButton color="gray" class="mx-2">
-              <img :src="pokemon.image" width="300" height="400">
+              <img @load="imageLoaded" :src="pokemon.image" class="lazy-img" width="300" height="400" loading="lazy">
             </UButton>
           </NuxtLink>
         </UCard>
@@ -271,5 +281,16 @@ const getPokedexInfo = (id: number, version: string) => {
 
 .animate {
   animation: fadeIn 1.5s ease-in;
+}
+
+.lazy-img {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 1s ease-in;
+}
+
+.lazy-img.loaded {
+  opacity: 1;
+  transform: translateY(0px);
 }
 </style>

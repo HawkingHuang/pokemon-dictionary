@@ -19,39 +19,34 @@ const imageLoaded = (event: Event) => {
   target.classList.add('loaded')
 }
 
-const carouselRef = ref()
-const carouselRef2 = ref()
-const carouselRef3 = ref()
+import type { Ref } from 'vue'
+type Carousel = {
+  next: () => void
+  prev: () => void
+  select: (index: number) => void
+  page: number
+  pages: number
+}
+const carouselRef: Ref<Carousel | null> = ref(null)
+const carouselRef2: Ref<Carousel | null> = ref(null)
+const carouselRef3: Ref<Carousel | null> = ref(null)
+
+const setupAutoPlay = (carousel: Ref<Carousel | null>) => {
+  setInterval(() => {
+    if (!carousel.value) return
+
+    if (carousel.value.page === carousel.value.pages) {
+      return carousel.value.select(0)
+    }
+
+    carousel.value.next()
+  }, 5000)
+}
+
 onMounted(() => {
-  setInterval(() => {
-    if (!carouselRef.value) return
-
-    if (carouselRef.value.page === carouselRef.value.pages) {
-      return carouselRef.value.select(0)
-    }
-
-    carouselRef.value.next()
-  }, 5000)
-
-  setInterval(() => {
-    if (!carouselRef2.value) return
-
-    if (carouselRef2.value.page === carouselRef2.value.pages) {
-      return carouselRef2.value.select(0)
-    }
-
-    carouselRef2.value.next()
-  }, 5000)
-
-  setInterval(() => {
-    if (!carouselRef3.value) return
-
-    if (carouselRef3.value.page === carouselRef3.value.pages) {
-      return carouselRef3.value.select(0)
-    }
-
-    carouselRef3.value.next()
-  }, 5000)
+  setupAutoPlay(carouselRef)
+  setupAutoPlay(carouselRef2)
+  setupAutoPlay(carouselRef3)
 })
 
 import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'

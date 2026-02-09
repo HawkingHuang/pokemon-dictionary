@@ -1,75 +1,54 @@
-# Nuxt Minimal Starter
+# Pokémon Dictionary
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+An experimental Pokémon introductory guide built with Nuxt 3. Explore game versions, browse Pokédex entries by game, and compare Pokémon stats side-by-side.
+
+## Features
+
+- **Home**: overview of what the app does with embedded media.
+- **Game Versions**: carousel of main-series versions with modal details (generation, Pokédexes, regions).
+- **Pokédex by Version**: choose a Pokédex and browse all Pokémon in that version.
+- **Pokémon Details**: view stats, moves (by version), and encounter locations.
+- **Stat Comparison**: compare two Pokémon with a quick difference summary.
+
+## Pages
+
+- `/` Home
+- `/version` Game versions browser
+- `/pokedex` Pokédex selector and list
+- `/pokedex/[name]` Pokémon detail page
+- `/pokemon` Pokémon search and comparison
+
+## Tech Stack
+
+- Nuxt 3 + Vue 3
+- @nuxt/ui components
+- Tailwind CSS (utility styling)
+- jQuery (client-side data fetching)
+- PokeAPI as the data source
 
 ## Setup
 
-Make sure to install dependencies:
+Install dependencies:
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+## Development
 
-Start the development server on `http://localhost:3000`:
+Start the dev server at http://localhost:3000:
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+## Build & Preview
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Data Source
+
+This project uses the public [PokeAPI](https://pokeapi.co/) for Pokémon, versions, moves, and encounter data.

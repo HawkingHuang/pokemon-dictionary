@@ -136,7 +136,7 @@ const imageLoaded = (event: Event) => {
         <span class="text-2xl font-bold bg-gray-200 p-1 rounded">{{ currentVersion }}</span>
       </div>
       <div v-else class="p-1 mt-4 animate">
-        <img src="/images/backgrounds/pokedex_background.png" alt="" class="opacity-50 rounded-lg">
+        <img src="/images/backgrounds/pokedex_background.webp" alt="" class="opacity-50 rounded-lg w-full">
       </div>
 
       <UCommandPalette v-if="isLoading" loading :empty-state="{ icon: '', label: '', queryLabel: '' }" />

@@ -7,7 +7,7 @@ definePageMeta({
 <template>
   <div class="relative max-h-[90vh] overflow-y-auto custom-scroll">
     <div class="relative bg-cover bg-center rounded">
-      <div class="absolute bg-fixed inset-0 bg-[url('/images/backgrounds/home_background.jpg')] bg-cover bg-center opacity-25 rounded-lg"></div>
+      <div class="absolute bg-fixed inset-0 bg-[url('/images/backgrounds/home_background.webp')] bg-cover bg-center opacity-25 rounded-lg"></div>
       
       <div class="relative z-10 p-1 animate">
         <div class="min-h-[800px] text-center">

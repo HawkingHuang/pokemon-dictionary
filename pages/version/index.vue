@@ -3,6 +3,27 @@ definePageMeta({
   layout: 'base-layout'
 })
 
+import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'
+import { capitalizeVersion, capitalizeGeneration, capitalizePokedexes, capitalizeRegions } from '@/utils/capitalize'
+
+const carouselConfigs = [
+  {
+    items,
+    imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]'
+  },
+  {
+    items: itemsSecondRow,
+    imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]'
+  },
+  {
+    items: itemsThirdRow,
+    imageClass: 'w-[75px] md:w-[150px] lg:w-[225px]'
+  }
+]
+
+const carouselRefs = ref<any[]>([])
+const carouselIntervals: number[] = []
+
 onMounted(() => {
   const images = document.querySelectorAll('.lazy-img')
   images.forEach(img => {
@@ -11,6 +32,26 @@ onMounted(() => {
       imageElement.classList.add('loaded')
     }
   })
+
+  carouselConfigs.forEach((_, index) => {
+    const intervalId = window.setInterval(() => {
+      const carousel = carouselRefs.value[index]
+      if (!carousel) return
+
+      if (carousel.page === carousel.pages) {
+        carousel.select(0)
+        return
+      }
+
+      carousel.next()
+    }, 5000)
+
+    carouselIntervals.push(intervalId)
+  })
+})
+
+onUnmounted(() => {
+  carouselIntervals.forEach(intervalId => clearInterval(intervalId))
 })
 
 
@@ -18,43 +59,6 @@ const imageLoaded = (event: Event) => {
   const target = event.target as HTMLImageElement
   target.classList.add('loaded')
 }
-
-const carouselRef = ref()
-const carouselRef2 = ref()
-const carouselRef3 = ref()
-onMounted(() => {
-  setInterval(() => {
-    if (!carouselRef.value) return
-
-    if (carouselRef.value.page === carouselRef.value.pages) {
-      return carouselRef.value.select(0)
-    }
-
-    carouselRef.value.next()
-  }, 5000)
-
-  setInterval(() => {
-    if (!carouselRef2.value) return
-
-    if (carouselRef2.value.page === carouselRef2.value.pages) {
-      return carouselRef2.value.select(0)
-    }
-
-    carouselRef2.value.next()
-  }, 5000)
-
-  setInterval(() => {
-    if (!carouselRef3.value) return
-
-    if (carouselRef3.value.page === carouselRef3.value.pages) {
-      return carouselRef3.value.select(0)
-    }
-
-    carouselRef3.value.next()
-  }, 5000)
-})
-
-import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'
 const image = ref<string>('')
 const version = ref<string>('')
 const generation = ref<string>('')
@@ -69,11 +73,10 @@ const openModal = async (item: Version) => {
     await getVersionInfo(item.id)
     isOpen.value = true
   } catch (error) {
-    console.log(error)
+    if (error instanceof Error) console.error(error.message, error.stack)
+    else console.error(error)
   }
 }
-
-import { capitalizeVersion, capitalizeGeneration, capitalizePokedexes, capitalizeRegions } from '@/utils/capitalize'
 const getVersionInfo = async (id: number) => {
   return new Promise((resolve, reject) => {
     $.ajax({
@@ -95,12 +98,14 @@ const getVersionInfo = async (id: number) => {
             resolve(res)
           },
           error: (error) => {
-            console.log(error)
+            if (error instanceof Error) console.error(error.message, error.stack)
+            else console.error(error)
           }
         })
       },
       error: (error) => {
-        console.log(error)
+        if (error instanceof Error) console.error(error.message, error.stack)
+        else console.error(error)
         reject(error)
       }
     })
@@ -110,19 +115,21 @@ const getVersionInfo = async (id: number) => {
 
 <template>
   <div>
-    <UCarousel ref="carouselRef" v-slot="{ item }" :items="items" class="mb-4">
+    <UCarousel
+      v-for="(carousel, index) in carouselConfigs"
+      :key="index"
+      :ref="el => carouselRefs[index] = el"
+      v-slot="{ item }"
+      :items="carousel.items"
+      class="mb-4"
+    >
       <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img @load="imageLoaded" :src="item.image" class="w-[100px] md:w-[200px] lg:w-[300px] lazy-img" draggable="false">
-      </UButton>
-    </UCarousel>
-    <UCarousel ref="carouselRef2" v-slot="{ item }" :items="itemsSecondRow" class="mb-4">
-      <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img @load="imageLoaded" :src="item.image" class="w-[100px] md:w-[200px] lg:w-[300px] lazy-img" draggable="false">
-      </UButton>
-    </UCarousel>
-    <UCarousel ref="carouselRef3" v-slot="{ item }" :items="itemsThirdRow" class="mb-4">
-      <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img @load="imageLoaded" :src="item.image" class="w-[75px] md:w-[150px] lg:w-[225px] lazy-img" draggable="false">
+        <img
+          @load="imageLoaded"
+          :src="item.image"
+          :class="[carousel.imageClass, 'lazy-img']"
+          draggable="false"
+        >
       </UButton>
     </UCarousel>
     <UModal v-model="isOpen" :ui="{background: 'bg-gradient-to-tr from-gray-100 to-gray-300'}">
@@ -141,7 +148,7 @@ const getVersionInfo = async (id: number) => {
 .lazy-img {
   opacity: 0;
   transform: translateY(20px);
-  transition: all 1s ease-in;
+  transition: all 0.5s ease-in;
 }
 
 .lazy-img.loaded {

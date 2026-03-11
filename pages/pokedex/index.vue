@@ -29,7 +29,8 @@ const fetchPokemonSpecies = (name: string) => {
         })
       },
       error: (error) => {
-        console.log(error)
+        if (error instanceof Error) console.error(error.message, error.stack)
+        else console.error(error)
         reject(error)
       }
     })
@@ -66,7 +67,8 @@ const getPokedexInfo = (id: number, version: string) => {
         currentVersion.value = version
       },
       error: (error) => {
-        console.log(error)
+        if (error instanceof Error) console.error(error.message, error.stack)
+        else console.error(error)
         reject(error)
       }
     })

@@ -44,7 +44,8 @@ const searchFirstPokemon = async (pokemon: string) => {
       showFirstPokemon.value = true
     },
     error: (error) => {
-      console.log(error)
+      if (error instanceof Error) console.error(error.message, error.stack)
+      else console.error(error)
     }
   })
 }
@@ -70,7 +71,8 @@ const searchSecondPokemon = async (pokemon: string) => {
       showSecondPokemon.value = true
     },
     error: (error) => {
-      console.log(error)
+      if (error instanceof Error) console.error(error.message, error.stack)
+      else console.error(error)
     }
   })
 }
@@ -88,7 +90,8 @@ onMounted(() => {
       })
     },
     error: (error) => {
-      console.log(error)
+      if (error instanceof Error) console.error(error.message, error.stack)
+      else console.error(error)
     }
   })
 })

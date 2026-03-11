@@ -5,6 +5,7 @@ definePageMeta({
 
 import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'
 import { capitalizeVersion, capitalizeGeneration, capitalizePokedexes, capitalizeRegions } from '@/utils/capitalize'
+import { markImageLoaded, markImagesIfComplete } from '@/utils/image'
 
 const carouselConfigs = [
   {
@@ -25,13 +26,7 @@ const carouselRefs = ref<any[]>([])
 const carouselIntervals: number[] = []
 
 onMounted(() => {
-  const images = document.querySelectorAll('.lazy-img')
-  images.forEach(img => {
-    const imageElement = img as HTMLImageElement
-    if (imageElement.complete) {
-      imageElement.classList.add('loaded')
-    }
-  })
+  markImagesIfComplete()
 
   carouselConfigs.forEach((_, index) => {
     const intervalId = window.setInterval(() => {
@@ -54,11 +49,6 @@ onUnmounted(() => {
   carouselIntervals.forEach(intervalId => clearInterval(intervalId))
 })
 
-
-const imageLoaded = (event: Event) => {
-  const target = event.target as HTMLImageElement
-  target.classList.add('loaded')
-}
 const image = ref<string>('')
 const version = ref<string>('')
 const generation = ref<string>('')
@@ -123,14 +113,14 @@ const getVersionInfo = async (id: number) => {
       :items="carousel.items"
       class="mb-4"
     >
-      <UButton @click="openModal(item)" color="gray" class="mx-2">
-        <img
-          @load="imageLoaded"
-          :src="item.image"
-          :class="[carousel.imageClass, 'lazy-img']"
-          draggable="false"
-        >
-      </UButton>
+        <UButton @click="openModal(item)" color="gray" class="mx-2">
+          <img
+            @load="markImageLoaded"
+            :src="item.image"
+            :class="[carousel.imageClass, 'lazy-img']"
+            draggable="false"
+          >
+        </UButton>
     </UCarousel>
     <UModal v-model="isOpen" :ui="{background: 'bg-gradient-to-tr from-gray-100 to-gray-300'}">
       <div class="mx-auto my-4">

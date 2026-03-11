@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { capitalizeName } from '@/utils/capitalize'
+import { markImageLoaded } from '@/utils/image'
 import { determineParam } from '@/utils/determineParam'
 import { pokedexVersions } from '@/utils/pokedexVersions'
 definePageMeta({
@@ -74,12 +75,6 @@ const getPokedexInfo = (id: number, version: string) => {
     })
   })
 }
-
-const imageLoaded = (event: Event) => {
-  const target = event.target as HTMLImageElement
-  target.classList.add('loaded')
-}
-
 </script>
 <template>
   <div>
@@ -114,7 +109,7 @@ const imageLoaded = (event: Event) => {
           </template>
           <NuxtLink :to="`/pokedex/${pokemon.name}?version=${selectedVersionParam}`">
             <UButton color="gray" class="mx-2">
-              <img @load="imageLoaded" :src="pokemon.image" class="lazy-img" width="300" height="400" loading="lazy">
+              <img @load="markImageLoaded" :src="pokemon.image" class="lazy-img" width="300" height="400" loading="lazy">
             </UButton>
           </NuxtLink>
         </UCard>

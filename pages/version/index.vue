@@ -3,24 +3,11 @@ definePageMeta({
   layout: 'base-layout'
 })
 
-import { items, itemsSecondRow, itemsThirdRow } from '@/utils/versions'
+import { carouselConfigs } from '@/utils/versions'
 import { capitalizeVersion, capitalizeGeneration, capitalizePokedexes, capitalizeRegions } from '@/utils/capitalize'
 import { markImageLoaded, markImagesIfComplete } from '@/utils/image'
 
-const carouselConfigs = [
-  {
-    items,
-    imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]'
-  },
-  {
-    items: itemsSecondRow,
-    imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]'
-  },
-  {
-    items: itemsThirdRow,
-    imageClass: 'w-[75px] md:w-[150px] lg:w-[225px]'
-  }
-]
+
 
 const carouselRefs = ref<any[]>([])
 const carouselIntervals: number[] = []

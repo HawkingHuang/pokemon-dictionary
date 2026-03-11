@@ -159,3 +159,14 @@ export const itemsThirdRow: Version[] = [
     image: '/images/versions/violet_version.png'
   }
 ] 
+
+export interface CarouselConfig {
+  items: Version[]
+  imageClass: string
+}
+
+export const carouselConfigs: CarouselConfig[] = [
+  { items, imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]' },
+  { items: itemsSecondRow, imageClass: 'w-[100px] md:w-[200px] lg:w-[300px]' },
+  { items: itemsThirdRow, imageClass: 'w-[75px] md:w-[150px] lg:w-[225px]' }
+]

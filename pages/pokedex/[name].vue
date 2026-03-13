@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { capitalizeVersion, capitalizeName, capitalizeLocation, capitalizeLocationVersion } from '@/utils/capitalize'
+import { capitalizeVersion, capitalizeName } from '@/utils/capitalize'
+import { getStats, getMoves, getLocations } from '@/utils/pokemon'
+import type { Stat, Move, Location } from '@/types/pokemon'
 definePageMeta({
   layout: 'base-layout'
 })
@@ -16,78 +18,9 @@ const showWhatSection = ref<string>('stats')
 const id = ref<string>('')
 const basicInfo = ref<any>({})
 
-interface Stat {
-  name: string,
-  base: number
-}
-
-interface APIMove {
-  move: any,
-  version_group_details: any[]
-}
-
-interface Move {
-  name: string,
-  level: number
-}
-
-interface Location {
-  location: string,
-  version: string
-}
-
 const stats = ref<Stat[]>([])
 const moves = ref<Move[]>([])
 const locations = ref<Location[]>([])
-
-const getStats = (res: any) => {
-  const baseFiveStats =  res.stats.map((stat: any) => {
-    return { stat: capitalizeVersion(stat.stat.name), base: stat.base_stat }
-  })
-  baseFiveStats.push({ stat: 'Total', base: baseFiveStats.reduce((acc: number, cur: Stat) => {
-    return acc + cur.base
-  }, 0)})
-
-  return baseFiveStats
-}
-
-const getMoves = (res: any) => {
-  return res.moves
-    .map((move: APIMove) => {
-      const versionDetail = move.version_group_details.find(
-        detail =>
-          detail.version_group.name === currentVersion &&
-          detail.move_learn_method.name === 'level-up'
-      )
-
-      if (!versionDetail) return null
-
-      return {
-        name: capitalizeVersion(move.move.name),
-        level: versionDetail ? versionDetail.level_learned_at : null
-      }
-    })
-    .filter((move: Move) => move !== null)
-    .sort((a: Move, b: Move) => a.level - b.level)
-}
-
-const getLocations = (res: any): any => {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: `https://pokeapi.co/api/v2/pokemon/${res.id}/encounters`,
-      type: 'GET',
-      dataType: 'json',
-      success: (res) => {
-        resolve(res)
-      },
-      error: (error) => {
-          if (error instanceof Error) console.error(error.message, error.stack)
-          else console.error(error)
-          reject(error)
-        }
-    })
-  })
-}
 
 onMounted(() => {
   isLoading.value = true
@@ -99,20 +32,15 @@ onMounted(() => {
       id.value = res.id
       basicInfo.value = res
 
-      stats.value = getStats(res)
-      moves.value = getMoves(res)
-      const rawLocations = await getLocations(res)
-      locations.value = rawLocations.map((location: any) => {
-        const versions = location.version_details.map((version: any) => {
-          return version.version.name
-        } )
-        return { version: capitalizeLocationVersion(versions), location: capitalizeLocation(location.location_area.name) }
-      })
+      stats.value = getStats(res.stats)
+      moves.value = getMoves(res.moves, String(currentVersion ?? ''))
+      locations.value = await getLocations(res.id)
 
       isLoading.value = false
     },
     error: (error) => {
-      console.log(error)
+      if (error instanceof Error) console.error(error.message, error.stack)
+      else console.error(error)
     }
   })
 })

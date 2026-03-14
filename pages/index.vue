@@ -39,22 +39,7 @@ definePageMeta({
   </div>
 </template>
 
-
-
 <style scoped>
-.custom-scroll::-webkit-scrollbar {
-  height: 0.5rem;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background-color: #dee2e6;
-  border-radius: 15px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-  background-color: #f1f3f5;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;

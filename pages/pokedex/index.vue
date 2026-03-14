@@ -101,18 +101,23 @@ const getPokedexInfo = (id: number, version: string) => {
         <img src="/images/backgrounds/pokedex_background.webp" alt="" class="opacity-50 rounded-lg w-full">
       </div>
 
-      <div v-if="!isLoading" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8  mt-4 p-2 gap-2 max-h-[80vh] overflow-y-auto custom-scroll animate">
-        <UCard v-for="pokemon in pokedexInfo" :key="pokemon.id">
-          <template #header>
-            <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>
-            <h4 class="text-xl font-bold mt-2">{{ capitalizeName(pokemon.name) }}</h4>
-          </template>
-          <NuxtLink :to="`/pokedex/${pokemon.name}?version=${selectedVersionParam}`">
-            <UButton color="gray" class="mx-2">
+      <div v-if="!isLoading" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8  mt-4 p-4 gap-6 max-h-[80vh] overflow-y-auto custom-scroll animate">
+        <NuxtLink
+          v-for="pokemon in pokedexInfo"
+          :key="pokemon.id"
+          :to="`/pokedex/${pokemon.name}?version=${selectedVersionParam}`"
+          class="block hover:shadow-lg hover:scale-105 transition-transform duration-500"
+        >
+          <UCard>
+            <template #header>
+              <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>
+              <h4 class="text-xl font-bold mt-2">{{ capitalizeName(pokemon.name) }}</h4>
+            </template>
+            <UButton as="div" color="gray" class="mx-2">
               <img @load="markImageLoaded" :src="pokemon.image" class="lazy-img" width="300" height="400" loading="lazy">
             </UButton>
-          </NuxtLink>
-        </UCard>
+          </UCard>
+        </NuxtLink>
       </div>
 
   
@@ -152,19 +157,6 @@ const getPokedexInfo = (id: number, version: string) => {
 </template>
 
 <style scoped>
-.custom-scroll::-webkit-scrollbar {
-  height: 0.5rem;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background-color: #dee2e6;
-  border-radius: 15px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-  background-color: #f1f3f5;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -181,11 +173,21 @@ const getPokedexInfo = (id: number, version: string) => {
 .lazy-img {
   opacity: 0;
   transform: translateY(20px);
-  transition: all 1s ease-in;
+  transition: all 0.3s ease-in;
 }
 
 .lazy-img.loaded {
   opacity: 1;
   transform: translateY(0px);
+}
+
+.lazy-img.loaded:hover {
+  animation: shaking 0.5s 1 ease-in;
+}
+
+@keyframes shaking {
+  0% {transform: rotate(5deg);}
+  50% {transform: rotate(-5deg);}
+  100% {transform: rotate(0deg);}
 }
 </style>

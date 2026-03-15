@@ -2,6 +2,9 @@
 definePageMeta({
   layout: 'base-layout'
 })
+
+import homeImageOne from '@/assets/images/home/home_image_1.png'
+import homeImageTwo from '@/assets/images/home/home_image_2.png'
 </script>
 
 <template>
@@ -13,23 +16,13 @@ definePageMeta({
         <div class="min-h-[800px] text-center">
           <h1 class="text-3xl md:text-5xl font-bold my-8">Pokémon Dictionary: An Experimental Pokémon Introductory Guide</h1>
           <p class="text-xl md:text-3xl font-bold mt-20">Pokémon Dictionary is a handbook for players who are not familiar with the world of Pokémon.</p>
-          <p class="text-xl md:text-3xl font-bold mt-20">In this handbook, you will first learn about all versions of the main Pokémon game series.</p>
+          <p class="text-xl md:text-3xl font-bold mt-20">Check the Pokédex page to discover all the Pokémon in different versions.</p>
           <div class="max-w-[1200px] mx-auto mt-10 overflow-hidden rounded">
-            <video autoplay loop muted>
-              <source src="/videos/home_video1.mp4" />
-            </video>
-          </div>
-          <p class="text-xl md:text-3xl font-bold mt-20">Also, check the Pokédex page to discover all the Pokémon in different versions.</p>
-          <div class="max-w-[1200px] mx-auto mt-10 overflow-hidden rounded">
-            <video autoplay loop muted>
-              <source src="/videos/home_video2.mp4" />
-            </video>
+            <img :src="homeImageOne" alt="Home Image 1" />
           </div>
           <p class="text-xl md:text-3xl font-bold mt-20">In addition, you can compare the stats of two Pokémon on the Pokémon page to see which one has the edge in certain stats.</p>
           <div class="max-w-[1200px] mx-auto my-10 overflow-hidden rounded">
-            <video autoplay loop muted>
-              <source src="/videos/home_video3.mp4" />
-            </video>
+            <img :src="homeImageTwo" alt="Home Image 2" />
           </div>
           <p class="text-xl md:text-3xl font-bold mt-20">In time, there will be exciting new features for you to explore, so stay tuned.</p>
           <p class="text-xl md:text-3xl font-bold mt-20">Good luck, Pokémon trainers! May your journey be full of discoveries!</p>

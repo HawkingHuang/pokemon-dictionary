@@ -1,0 +1,56 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate {
+  animation: fadeIn 0.2s ease-in;
+}
+
+.layout-switch-enter-active,
+.layout-switch-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.layout-switch-enter-from {
+  opacity: 0;
+}
+
+.layout-switch-leave-to {
+  opacity: 0;
+  transform: translateX(-48px);
+}
+
+@keyframes splitLeftIn {
+  from {
+    opacity: 0;
+    transform: translateX(-48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes splitRightIn {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.split-left-card {
+  animation: splitLeftIn 0.2s ease both;
+}
+
+.split-right-card {
+  animation: splitRightIn 0.2s ease both;
+}

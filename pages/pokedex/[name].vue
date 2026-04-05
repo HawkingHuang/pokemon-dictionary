@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getStats, getMoves, getLocations } from '@/utils/pokemon'
 import type { Stat, Move, Location } from '@/types/pokemon'
 definePageMeta({
   layout: 'base-layout'
@@ -12,7 +11,6 @@ const currentVersion = query.version
 
 const isLoading = ref<boolean>(true)
 const showDetails = ref<boolean>(false)
-const showWhatSection = ref<string>('stats')
 const id = ref<string>('')
 const basicInfo = ref<any>({})
 
@@ -74,18 +72,11 @@ const switchDetails = () => {
             />
           </div>
 
-          <UCard class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto split-right-card">
-            <main class="text-lg">
-              <nav class="flex gap-2">
-                <UButton class="text-lg" @click="showWhatSection = 'stats'"><UIcon name="gridicons:stats" class="w-5 h-5" />Stats</UButton>
-                <UButton class="text-lg" @click="showWhatSection = 'moves'"><UIcon name="charm:sword" class="w-5 h-5" />Moves</UButton>
-                <UButton v-if="locations.length > 0" class="text-lg" @click="showWhatSection = 'locations'"><UIcon name="material-symbols:location-on-outline-rounded" class="w-5 h-5" />Locations</UButton>
-              </nav>
-              <UTable v-if="showWhatSection === 'stats'" :rows="stats"/>
-              <UTable v-if="showWhatSection === 'moves'" :rows="moves" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
-              <UTable v-if="showWhatSection === 'locations'" :rows="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
-            </main>
-          </UCard>
+          <PokemonDetailCard
+            :stats="stats"
+            :moves="moves"
+            :locations="locations"
+          />
         </div>
       </Transition>
     </div>

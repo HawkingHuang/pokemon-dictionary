@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { capitalizeVersion, capitalizeName } from '@/utils/capitalize'
 
 defineProps<{
   id: string | number

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { capitalizeName } from '@/utils/capitalize'
 definePageMeta({
   layout: 'base-layout'
 })

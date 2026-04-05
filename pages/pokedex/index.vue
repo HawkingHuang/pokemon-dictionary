@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { capitalizeName } from '@/utils/capitalize'
-import { markImageLoaded } from '@/utils/image'
-import { determineParam } from '@/utils/determineParam'
-import { pokedexVersions } from '@/utils/pokedexVersions'
 definePageMeta({
   layout: 'base-layout'
 })

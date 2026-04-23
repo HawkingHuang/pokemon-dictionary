@@ -78,6 +78,21 @@ const searchSecondPokemon = async (pokemon: string) => {
 
 
 const pokemonSearchList = ref<string[]>([])
+
+const filterPokemon = (query: string) => {
+  const q = query?.trim()
+  if (!q || q.length < 2) return []
+  return pokemonSearchList.value.filter(name =>
+    name.toLowerCase().startsWith(q.toLowerCase())
+  )
+}
+
+const firstPokemonQuery = ref<string>('')
+const filteredFirstPokemonList = computed(() => filterPokemon(firstPokemonQuery.value))
+
+const secondPokemonQuery = ref<string>('')
+const filteredSecondPokemonList = computed(() => filterPokemon(secondPokemonQuery.value))
+
 onMounted(() => {
   $.ajax({
     url: 'https://pokeapi.co/api/v2/pokemon?limit=1025',
@@ -124,11 +139,11 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
   <div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
       <div class="flex gap-2 max-w-[400px]">
-        <UInputMenu v-model="firstPokemonInput" :options="pokemonSearchList" placeholder="Type/select a Pokémon" size="xl" class="w-[250px]"/>
+        <UInputMenu v-model="firstPokemonInput" v-model:query="firstPokemonQuery" :options="filteredFirstPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
         <UButton @click="searchFirstPokemon(firstPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
       <div v-if="showFirstPokemon" class="flex gap-2 max-w-[400px]">
-        <UInputMenu v-model="secondPokemonInput" :options="pokemonSearchList" placeholder="Type/select a Pokémon" size="xl" class="w-[250px]"/>
+        <UInputMenu v-model="secondPokemonInput" v-model:query="secondPokemonQuery" :options="filteredSecondPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
         <UButton @click="searchSecondPokemon(secondPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
     </div>

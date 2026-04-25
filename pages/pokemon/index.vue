@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
+
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
+
 definePageMeta({
   layout: 'base-layout'
 })
@@ -23,51 +27,80 @@ const getStats = (res: any) => {
   return baseFiveStats
 }
 
+const firstStatsCanvas = ref<HTMLCanvasElement | null>(null)
+const secondStatsCanvas = ref<HTMLCanvasElement | null>(null)
+const charts: { first: Chart | null, second: Chart | null } = { first: null, second: null }
+
+function buildChart(canvas: HTMLCanvasElement, stats: Stat[]): Chart {
+  const filtered = stats.filter(s => s.stat !== 'Total')
+  const labels = filtered.map(s => s.stat)
+  const data = filtered.map(s => s.base)
+  const colors = labels.map(l => STAT_COLORS[l] ?? 'rgba(100, 181, 246, 0.8)')
+
+  return new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderColor: colors.map(c => c.replace('0.8', '1')),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.x}` } }
+      },
+      scales: {
+        x: { min: 0, max: 200, grid: { color: 'rgba(200,200,200,0.5)' }, ticks: { color: '#9ca3af' } },
+        y: { grid: { display: false }, ticks: { color: '#495057', font: { size: 13 } } }
+      }
+    }
+  })
+}
+
 const firstPokemonInput = ref<string>('')
 const firstPokemonBasicInfo = ref<any>({})
 const firstPokemonStats = ref<Stat[]>([])
 const firstPokemonStatsForCompare = ref<StatCompare[]>([])
 const showFirstPokemon = ref<boolean>(false)
-const searchFirstPokemon = async (pokemon: string) => {
-  $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon/${pokemon.toLowerCase()}`,
-    type: 'GET',
-    dataType: 'json',
-    success: (res) => {
-      firstPokemonBasicInfo.value = res
-      firstPokemonStats.value = getStats(res)
-      firstPokemonStatsForCompare.value = firstPokemonStats.value.map((stat: Stat) => {
-        return { base: stat.base }
-      })
-
-      showFirstPokemon.value = true
-    },
-    error: (error) => {
-      if (error instanceof Error) console.error(error.message, error.stack)
-      else console.error(error)
-    }
-  })
-}
 
 const secondPokemonInput = ref<string>('')
 const secondPokemonBasicInfo = ref<any>({})
 const secondPokemonStats = ref<Stat[]>([])
 const secondPokemonStatsForCompare = ref<StatCompare[]>([])
 const showSecondPokemon = ref<boolean>(false)
-const searchSecondPokemon = async (pokemon: string) => {
-  showSecondPokemon.value = false
+
+const searchPokemon = (pokemon: string, slot: 'first' | 'second') => {
+  const basicInfo = slot === 'first' ? firstPokemonBasicInfo : secondPokemonBasicInfo
+  const stats = slot === 'first' ? firstPokemonStats : secondPokemonStats
+  const statsForCompare = slot === 'first' ? firstPokemonStatsForCompare : secondPokemonStatsForCompare
+  const show = slot === 'first' ? showFirstPokemon : showSecondPokemon
+  const canvas = slot === 'first' ? firstStatsCanvas : secondStatsCanvas
+
+  if (slot === 'second') show.value = false
+
   $.ajax({
     url: `https://pokeapi.co/api/v2/pokemon/${pokemon.toLowerCase()}`,
     type: 'GET',
     dataType: 'json',
     success: (res) => {
-      secondPokemonBasicInfo.value = res
-      secondPokemonStats.value = getStats(res)
-      secondPokemonStatsForCompare.value = secondPokemonStats.value.map((stat: Stat) => {
-        return { base: stat.base }
+      basicInfo.value = res
+      stats.value = getStats(res)
+      statsForCompare.value = stats.value.map((stat: Stat) => ({ base: stat.base }))
+      show.value = true
+      nextTick(() => {
+        if (canvas.value) {
+          charts[slot]?.destroy()
+          charts[slot] = buildChart(canvas.value, stats.value)
+        }
       })
-
-      showSecondPokemon.value = true
     },
     error: (error) => {
       if (error instanceof Error) console.error(error.message, error.stack)
@@ -133,6 +166,11 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
   }
 }
 
+onUnmounted(() => {
+  charts.first?.destroy()
+  charts.second?.destroy()
+})
+
 </script>
 
 <template>
@@ -140,11 +178,11 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
       <div class="flex gap-2 max-w-[400px]">
         <UInputMenu v-model="firstPokemonInput" v-model:query="firstPokemonQuery" :options="filteredFirstPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
-        <UButton @click="searchFirstPokemon(firstPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
+        <UButton @click="searchPokemon(firstPokemonInput, 'first')" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
       <div v-if="showFirstPokemon" class="flex gap-2 max-w-[400px]">
         <UInputMenu v-model="secondPokemonInput" v-model:query="secondPokemonQuery" :options="filteredSecondPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
-        <UButton @click="searchSecondPokemon(secondPokemonInput)" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
+        <UButton @click="searchPokemon(secondPokemonInput, 'second')" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
@@ -184,7 +222,14 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
               </div>
             </div>
             <div>
-              <UTable :rows="firstPokemonStats"/>
+              <ClientOnly>
+                <div class="relative" style="height: 220px;">
+                  <canvas ref="firstStatsCanvas" />
+                </div>
+                <p class="text-right text-sm text-gray-400 mt-1">
+                  Total: <span class="font-semibold text-gray-500">{{ firstPokemonStats.find(s => s.stat === 'Total')?.base }}</span>
+                </p>
+              </ClientOnly>
             </div>
           </div>
         </main>
@@ -226,7 +271,14 @@ const calculateDifferences = (first: Stat[], second: Stat[]) => {
               </div>
             </div>
             <div>
-              <UTable :rows="secondPokemonStats"/>
+              <ClientOnly>
+                <div class="relative" style="height: 220px;">
+                  <canvas ref="secondStatsCanvas" />
+                </div>
+                <p class="text-right text-sm text-gray-400 mt-1">
+                  Total: <span class="font-semibold text-gray-500">{{ secondPokemonStats.find(s => s.stat === 'Total')?.base }}</span>
+                </p>
+              </ClientOnly>
             </div>
           </div>
         </main>

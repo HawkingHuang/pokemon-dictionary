@@ -12,10 +12,6 @@ interface Stat {
   base: number
 }
 
-interface StatCompare {
-  base: number
-}
-
 const getStats = (res: any) => {
   const baseFiveStats =  res.stats.map((stat: any) => {
     return { stat: capitalizeVersion(stat.stat.name), base: stat.base_stat }
@@ -29,7 +25,8 @@ const getStats = (res: any) => {
 
 const firstStatsCanvas = ref<HTMLCanvasElement | null>(null)
 const secondStatsCanvas = ref<HTMLCanvasElement | null>(null)
-const charts: { first: Chart | null, second: Chart | null } = { first: null, second: null }
+const compareCanvas = ref<HTMLCanvasElement | null>(null)
+const charts: { first: Chart | null, second: Chart | null, compare: Chart | null } = { first: null, second: null, compare: null }
 
 function buildChart(canvas: HTMLCanvasElement, stats: Stat[]): Chart {
   const filtered = stats.filter(s => s.stat !== 'Total')
@@ -65,22 +62,62 @@ function buildChart(canvas: HTMLCanvasElement, stats: Stat[]): Chart {
   })
 }
 
+function buildCompareChart(canvas: HTMLCanvasElement, firstStats: Stat[], secondStats: Stat[], firstName: string, secondName: string): Chart {
+  const labels = firstStats.map(s => s.stat)
+  const firstData = firstStats.map(s => s.base)
+  const secondData = secondStats.map(s => s.base)
+
+  return new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: firstName,
+          data: firstData,
+          backgroundColor: 'rgba(96, 165, 250, 0.8)',
+          borderColor: 'rgba(96, 165, 250, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: secondName,
+          data: secondData,
+          backgroundColor: 'rgba(248, 113, 113, 0.8)',
+          borderColor: 'rgba(248, 113, 113, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#495057' } },
+        tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#495057', font: { size: 11 } } },
+        y: { min: 0, max: 700, grid: { color: 'rgba(200,200,200,0.5)' }, ticks: { color: '#9ca3af' } }
+      }
+    }
+  })
+}
+
 const firstPokemonInput = ref<string>('')
 const firstPokemonBasicInfo = ref<any>({})
 const firstPokemonStats = ref<Stat[]>([])
-const firstPokemonStatsForCompare = ref<StatCompare[]>([])
 const showFirstPokemon = ref<boolean>(false)
 
 const secondPokemonInput = ref<string>('')
 const secondPokemonBasicInfo = ref<any>({})
 const secondPokemonStats = ref<Stat[]>([])
-const secondPokemonStatsForCompare = ref<StatCompare[]>([])
 const showSecondPokemon = ref<boolean>(false)
 
 const searchPokemon = (pokemon: string, slot: 'first' | 'second') => {
   const basicInfo = slot === 'first' ? firstPokemonBasicInfo : secondPokemonBasicInfo
   const stats = slot === 'first' ? firstPokemonStats : secondPokemonStats
-  const statsForCompare = slot === 'first' ? firstPokemonStatsForCompare : secondPokemonStatsForCompare
   const show = slot === 'first' ? showFirstPokemon : showSecondPokemon
   const canvas = slot === 'first' ? firstStatsCanvas : secondStatsCanvas
 
@@ -93,7 +130,6 @@ const searchPokemon = (pokemon: string, slot: 'first' | 'second') => {
     success: (res) => {
       basicInfo.value = res
       stats.value = getStats(res)
-      statsForCompare.value = stats.value.map((stat: Stat) => ({ base: stat.base }))
       show.value = true
       nextTick(() => {
         if (canvas.value) {
@@ -144,31 +180,32 @@ onMounted(() => {
 })
 
 const isOpen = ref<boolean>(false)
-const comparePokemons = () => {
-  statDifferences.value = []
-  calculateDifferences(firstPokemonStats.value, secondPokemonStats.value)
-  isOpen.value = true
-}
+const comparePokemons = () => { isOpen.value = true }
 
-interface StatDiff {
-  stat: string
-}
-
-const statDifferences = ref<StatDiff[]>([])
-const calculateDifferences = (first: Stat[], second: Stat[]) => {
-  for(let i = 0; i < first.length; i++) {
-    const diff = second[i].base - first[i].base
-    if (diff >= 0) {
-      statDifferences.value.push({ stat: first[i].stat + ' ' + '+' + String(diff) }) 
-    } else {
-      statDifferences.value.push({ stat: first[i].stat + ' ' + String(diff) }) 
-    }
+watch(isOpen, (val) => {
+  if (val) {
+    nextTick(() => {
+      if (compareCanvas.value) {
+        charts.compare?.destroy()
+        charts.compare = buildCompareChart(
+          compareCanvas.value,
+          firstPokemonStats.value,
+          secondPokemonStats.value,
+          capitalizeName(firstPokemonBasicInfo.value.name),
+          capitalizeName(secondPokemonBasicInfo.value.name)
+        )
+      }
+    })
+  } else {
+    charts.compare?.destroy()
+    charts.compare = null
   }
-}
+}, { flush: 'post' })
 
 onUnmounted(() => {
   charts.first?.destroy()
   charts.second?.destroy()
+  charts.compare?.destroy()
 })
 
 </script>
@@ -283,19 +320,20 @@ onUnmounted(() => {
           </div>
         </main>
       </UCard>
-      <UModal v-model="isOpen" class="p-2">
-        <div class="grid grid-cols-3">
-          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="">
-          <div class="flex items-center justify-center">
-            <UIcon name="material-symbols:keyboard-double-arrow-right-rounded" class="w-8 h-8 animate-slide" />
+      <UModal v-model="isOpen" :ui="{ width: 'max-w-[95vw] sm:max-w-[70vw] lg:max-w-[50vw]' }" class="p-2">
+        <div class="flex justify-around p-4">
+          <div class="bg-blue-400/80 rounded-full p-2">
+            <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
           </div>
-          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="">
+          <div class="bg-red-400/80 rounded-full p-2">
+            <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+          </div>
         </div>
-        <div class="grid grid-cols-3">
-          <UTable :rows="firstPokemonStatsForCompare" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"/>
-          <UTable :rows="statDifferences" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"></UTable>
-          <UTable :rows="secondPokemonStatsForCompare" :ui="{ th: { base: 'text-center' }, td: { base: 'text-center' }, base: '!border-0 !divide-none' }"/>
-        </div>
+        <ClientOnly>
+          <div class="relative px-4 pb-4" style="height: 400px;">
+            <canvas ref="compareCanvas" />
+          </div>
+        </ClientOnly>
       </UModal>
     </div>
   </div>

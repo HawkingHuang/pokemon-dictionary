@@ -16,6 +16,7 @@ const basicInfo = ref<any>({})
 
 const stats = ref<Stat[]>([])
 const moves = ref<Move[]>([])
+const movesLoading = ref<boolean>(true)
 const locations = ref<Location[]>([])
 
 onMounted(() => {
@@ -29,7 +30,9 @@ onMounted(() => {
       basicInfo.value = res
 
       stats.value = getStats(res.stats)
-      moves.value = getMoves(res.moves, String(currentVersion ?? ''))
+      movesLoading.value = true
+      moves.value = await getMoves(res.moves, String(currentVersion ?? ''))
+      movesLoading.value = false
       locations.value = await getLocations(res.id)
 
       isLoading.value = false
@@ -75,6 +78,7 @@ const switchDetails = () => {
           <PokemonDetailCard
             :stats="stats"
             :moves="moves"
+            :moves-loading="movesLoading"
             :locations="locations"
           />
         </div>

@@ -35,6 +35,17 @@ export interface APIMoveVersionDetail {
 export interface Move {
   name: string
   level: number
+  type: string
+  power: number | null
+  accuracy: number | null
+  pp: number
+}
+
+export interface APIMoveDetail {
+  type: { name: string }
+  power: number | null
+  accuracy: number | null
+  pp: number
 }
 
 export interface Location {

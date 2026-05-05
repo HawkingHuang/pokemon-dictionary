@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
 import type { Stat, Move, Location } from '@/types/pokemon'
+import { TYPE_COLORS } from '@/utils/typeColors'
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
 
 const props = defineProps<{
   stats: Stat[]
   moves: Move[]
+  movesLoading: boolean
   locations: Location[]
 }>()
 
@@ -109,7 +111,29 @@ onUnmounted(() => {
         </ClientOnly>
       </div>
 
-      <UTable v-if="showWhatSection === 'moves'" :rows="moves" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
+      <UTable
+        v-if="showWhatSection === 'moves'"
+        :rows="moves"
+        :loading="movesLoading"
+        :columns="[
+          { key: 'level', label: 'Level' },
+          { key: 'name', label: 'Name' },
+          { key: 'type', label: 'Type' },
+          { key: 'power', label: 'Power' },
+          { key: 'accuracy', label: 'Accuracy' },
+          { key: 'pp', label: 'PP' },
+        ]"
+        class="max-h-[80vh] overflow-y-auto custom-scroll"
+      >
+        <template #type-data="{ row }">
+          <span
+            class="inline-block px-2 py-0.5 rounded text-sm text-white capitalize"
+            :style="{ backgroundColor: TYPE_COLORS[row.type] ?? '#9099A1' }"
+          >{{ row.type }}</span>
+        </template>
+        <template #power-data="{ row }">{{ row.power ?? '—' }}</template>
+        <template #accuracy-data="{ row }">{{ row.accuracy ?? '—' }}</template>
+      </UTable>
       <UTable v-if="showWhatSection === 'locations'" :rows="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
     </main>
   </UCard>

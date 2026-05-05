@@ -1,5 +1,5 @@
 import { capitalizeLocation, capitalizeLocationVersion, capitalizeVersion } from '@/utils/capitalize'
-import type { APIEncounterLocation, APIMove, APIStat, Location, Move, Stat } from '@/types/pokemon'
+import type { APIEncounterLocation, APIMove, APIMoveDetail, APIStat, Location, Move, Stat } from '@/types/pokemon'
 
 export function getStats(stats: APIStat[]): Stat[] {
   const formattedStats = stats.map((stat) => {
@@ -16,8 +16,8 @@ export function getStats(stats: APIStat[]): Stat[] {
   return formattedStats
 }
 
-export function getMoves(moves: APIMove[], currentVersion: string): Move[] {
-  return moves
+export async function getMoves(moves: APIMove[], currentVersion: string): Promise<Move[]> {
+  const filtered = moves
     .map((move) => {
       const versionDetail = move.version_group_details.find(
         detail =>
@@ -29,11 +29,27 @@ export function getMoves(moves: APIMove[], currentVersion: string): Move[] {
 
       return {
         name: capitalizeVersion(move.move.name),
-        level: versionDetail.level_learned_at
+        level: versionDetail.level_learned_at,
+        url: move.move.url
       }
     })
-    .filter((move): move is Move => move !== null)
+    .filter((move): move is { name: string; level: number; url: string } => move !== null)
     .sort((a, b) => (a.level ?? 0) - (b.level ?? 0))
+
+  const details = await Promise.all(
+    filtered.map(move =>
+      fetch(move.url).then(res => res.json() as Promise<APIMoveDetail>)
+    )
+  )
+
+  return filtered.map((move, i) => ({
+    name: move.name,
+    level: move.level,
+    type: details[i].type.name,
+    power: details[i].power,
+    accuracy: details[i].accuracy,
+    pp: details[i].pp
+  }))
 }
 
 export function getLocations(pokemonId: number): Promise<Location[]> {

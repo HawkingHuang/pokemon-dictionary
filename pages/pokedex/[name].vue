@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Stat, Move, Location } from '@/types/pokemon'
+import type { Stat, Move, Location, EvolutionStage } from '@/types/pokemon'
 definePageMeta({
   layout: 'base-layout'
 })
@@ -18,6 +18,7 @@ const stats = ref<Stat[]>([])
 const moves = ref<Move[]>([])
 const movesLoading = ref<boolean>(true)
 const locations = ref<Location[]>([])
+const evolutionChain = ref<EvolutionStage[]>([])
 
 onMounted(() => {
   isLoading.value = true
@@ -31,9 +32,15 @@ onMounted(() => {
 
       stats.value = getStats(res.stats)
       movesLoading.value = true
-      moves.value = await getMoves(res.moves, String(currentVersion ?? ''))
+      const [movesResult, locationsResult, chainResult] = await Promise.all([
+        getMoves(res.moves, String(currentVersion ?? '')),
+        getLocations(res.id),
+        getEvolutionChain(String(name)).catch(() => [] as EvolutionStage[])
+      ])
+      moves.value = movesResult
       movesLoading.value = false
-      locations.value = await getLocations(res.id)
+      locations.value = locationsResult
+      evolutionChain.value = chainResult
 
       isLoading.value = false
     },
@@ -80,6 +87,9 @@ const switchDetails = () => {
             :moves="moves"
             :moves-loading="movesLoading"
             :locations="locations"
+            :evolution-chain="evolutionChain"
+            :current-version="String(currentVersion ?? '')"
+            :pokemon-name="String(name)"
           />
         </div>
       </Transition>

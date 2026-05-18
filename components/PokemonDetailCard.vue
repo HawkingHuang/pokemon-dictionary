@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
-import type { Stat, Move, Location } from '@/types/pokemon'
+import type { Stat, Move, Location, EvolutionStage } from '@/types/pokemon'
 import { TYPE_COLORS } from '@/utils/typeColors'
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
@@ -10,11 +10,26 @@ const props = defineProps<{
   moves: Move[]
   movesLoading: boolean
   locations: Location[]
+  evolutionChain: EvolutionStage[]
+  currentVersion: string
+  pokemonName: string
 }>()
 
 const showWhatSection = ref<string>('stats')
 const statsCanvas = ref<HTMLCanvasElement | null>(null)
 let chart: Chart | null = null
+
+// Group evolution stages by stage index: EvolutionStage[][]
+const evolutionStageGroups = computed(() => {
+  const groups: EvolutionStage[][] = []
+  for (const e of props.evolutionChain) {
+    if (!groups[e.stage]) groups[e.stage] = []
+    groups[e.stage].push(e)
+  }
+  return groups
+})
+
+const hasEvolution = computed(() => props.evolutionChain.length > 1)
 
 const statsWithoutTotal = computed(() => props.stats.filter(s => s.stat !== 'Total'))
 const totalStat = computed(() => props.stats.find(s => s.stat === 'Total'))
@@ -88,7 +103,7 @@ onUnmounted(() => {
 <template>
   <UCard class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto split-right-card">
     <main class="text-lg">
-      <nav class="flex gap-2">
+      <nav class="flex flex-wrap gap-2">
         <UButton class="text-lg" @click="showWhatSection = 'stats'">
           <UIcon name="gridicons:stats" class="w-5 h-5" />Stats
         </UButton>
@@ -97,6 +112,10 @@ onUnmounted(() => {
         </UButton>
         <UButton v-if="locations.length > 0" class="text-lg" @click="showWhatSection = 'locations'">
           <UIcon name="material-symbols:location-on-outline-rounded" class="w-5 h-5" />Locations
+        </UButton>
+        <!-- TODO: Replace with UTimeline once @nuxt/ui is upgraded to v3+ -->
+        <UButton v-if="hasEvolution" class="text-lg" @click="showWhatSection = 'evolution'">
+          <UIcon name="heroicons:arrow-trending-up" class="w-5 h-5" />Evolution
         </UButton>
       </nav>
 
@@ -135,6 +154,38 @@ onUnmounted(() => {
         <template #accuracy-data="{ row }">{{ row.accuracy ?? '—' }}</template>
       </UTable>
       <UTable v-if="showWhatSection === 'locations'" :rows="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
+
+      <!-- Evolution chain — custom timeline (UTimeline not available in @nuxt/ui v2.x) -->
+      <div v-if="showWhatSection === 'evolution'" class="mt-4 flex flex-col items-center gap-0">
+        <template v-for="(members, idx) in evolutionStageGroups" :key="idx">
+          <!-- Divider with trigger label between stages -->
+          <div v-if="idx > 0" class="flex flex-col items-center my-1 text-gray-400">
+            <UIcon name="heroicons:arrow-down" class="w-5 h-5" />
+            <span class="text-xs">{{ members[0].trigger || '—' }}</span>
+          </div>
+
+          <!-- Stage row: one or more Pokémon (branching evolutions shown side-by-side) -->
+          <div class="flex flex-wrap justify-center gap-3">
+            <button
+              v-for="evo in members"
+              :key="evo.id"
+              class="flex flex-col items-center gap-1 px-3 py-2 rounded-xl border transition-all cursor-pointer hover:shadow-md"
+              :class="evo.name === pokemonName
+                ? 'border-green-400 bg-green-50 dark:bg-green-900/20 ring-2 ring-green-400'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'"
+              @click="navigateTo(`/pokedex/${evo.name}?version=${currentVersion}`)"
+            >
+              <img
+                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`"
+                :alt="evo.name"
+                width="80"
+                height="80"
+              >
+              <span class="text-sm font-medium capitalize">{{ evo.name }}</span>
+            </button>
+          </div>
+        </template>
+      </div>
     </main>
   </UCard>
 </template>

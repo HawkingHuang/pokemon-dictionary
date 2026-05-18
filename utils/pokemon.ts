@@ -1,5 +1,5 @@
 import { capitalizeLocation, capitalizeLocationVersion, capitalizeVersion } from '@/utils/capitalize'
-import type { APIEncounterLocation, APIMove, APIMoveDetail, APIStat, Location, Move, Stat } from '@/types/pokemon'
+import type { APIEncounterLocation, APIEvolutionChain, APIEvolutionChainNode, APIMove, APIMoveDetail, APIStat, APISpeciesEvolutionChain, EvolutionStage, Location, Move, Stat } from '@/types/pokemon'
 
 export function getStats(stats: APIStat[]): Stat[] {
   const formattedStats = stats.map((stat) => {
@@ -79,4 +79,40 @@ export function getLocations(pokemonId: number): Promise<Location[]> {
       }
     })
   })
+}
+
+function formatTrigger(details: APIEvolutionChainNode['evolution_details']): string {
+  if (!details.length) return ''
+  const d = details[0]
+  if (d.min_level) return `Lv.${d.min_level}`
+  if (d.item) return `Use ${capitalizeVersion(d.item.name)}`
+  if (d.trigger.name === 'trade') return 'Trade'
+  return capitalizeVersion(d.trigger.name)
+}
+
+function extractIdFromUrl(url: string): number {
+  const parts = url.split('/').filter(Boolean)
+  return parseInt(parts[parts.length - 1], 10)
+}
+
+function flattenChain(node: APIEvolutionChainNode, stage: number, result: EvolutionStage[]): void {
+  result.push({
+    name: node.species.name,
+    id: extractIdFromUrl(node.species.url),
+    stage,
+    trigger: formatTrigger(node.evolution_details)
+  })
+  for (const child of node.evolves_to) {
+    flattenChain(child, stage + 1, result)
+  }
+}
+
+export async function getEvolutionChain(pokemonName: string): Promise<EvolutionStage[]> {
+  const species = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`)
+    .then(r => r.json() as Promise<APISpeciesEvolutionChain>)
+  const chain = await fetch(species.evolution_chain.url)
+    .then(r => r.json() as Promise<APIEvolutionChain>)
+  const result: EvolutionStage[] = []
+  flattenChain(chain.chain, 0, result)
+  return result
 }

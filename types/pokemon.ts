@@ -66,3 +66,30 @@ export interface APIEncounterVersionDetail {
     name: string
   }
 }
+
+export interface APIEvolutionDetail {
+  min_level: number | null
+  trigger: { name: string }
+  item: { name: string } | null
+}
+
+export interface APIEvolutionChainNode {
+  species: { name: string; url: string }
+  evolution_details: APIEvolutionDetail[]
+  evolves_to: APIEvolutionChainNode[]
+}
+
+export interface APIEvolutionChain {
+  chain: APIEvolutionChainNode
+}
+
+export interface APISpeciesEvolutionChain {
+  evolution_chain: { url: string }
+}
+
+export interface EvolutionStage {
+  name: string
+  id: number
+  stage: number
+  trigger: string
+}

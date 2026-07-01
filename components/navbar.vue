@@ -20,6 +20,11 @@ const links = [
     icon: 'i-gg:pokemon',
     to: '/pokemon'
   },
+  {
+    label: 'Team',
+    icon: 'i-mingcute:group-3-line',
+    to: '/team'
+  },
 ]
 </script>
 

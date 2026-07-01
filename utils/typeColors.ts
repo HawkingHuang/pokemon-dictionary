@@ -19,3 +19,6 @@ export const TYPE_COLORS: Record<string, string> = {
   fairy:    '#EF70EF',
   stellar:  '#40B5A5',
 }
+
+// Type badge color with a neutral fallback
+export const typeColor = (type: string): string => TYPE_COLORS[type] ?? '#9FA19F'

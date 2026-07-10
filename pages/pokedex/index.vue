@@ -109,7 +109,7 @@ const getPokedexInfo = (id: number, version: string) => {
               <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ pokemon.id }}</span>
               <h4 class="text-xl font-bold mt-2">{{ capitalizeName(pokemon.name) }}</h4>
             </template>
-            <UButton as="div" color="gray" class="mx-2">
+            <UButton as="div" color="neutral" variant="subtle" class="mx-2">
               <img @load="markImageLoaded" :src="pokemon.image" class="lazy-img" width="300" height="400" loading="lazy">
             </UButton>
           </UCard>
@@ -117,21 +117,15 @@ const getPokedexInfo = (id: number, version: string) => {
       </div>
 
   
-      <USlideover v-model="isOpen">
-        <UCard
-          class="flex flex-col flex-1"
-          :ui="{ body: { base: 'flex-1' }, ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }"
-        >
-          <template #header>
-            <h3 class="text-xl">Pokédex Versions</h3>
-          </template>
-  
+      <USlideover v-model:open="isOpen" title="Pokédex Versions">
+        <template #body>
           <div class="flex flex-col gap-4 max-h-[80vh] overflow-y-auto custom-scroll">
             <UButton
               v-for="item in pokedexVersions"
               :key="`${item.id}-${item.version}`"
               class="text-lg mr-1"
-              color="white"
+              color="neutral"
+              variant="outline"
               @click="getPokedexInfo(item.id, item.version)"
             >
               <UIcon name="i-hugeicons:pokemon" class="w-5 h-5" />
@@ -146,7 +140,7 @@ const getPokedexInfo = (id: number, version: string) => {
               </span>
             </UButton>
           </div>
-        </UCard>
+        </template>
       </USlideover>
     </div>
   </div>

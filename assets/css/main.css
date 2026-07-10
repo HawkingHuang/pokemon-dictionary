@@ -1,3 +1,15 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Custom breakpoints ported from the old tailwind.config.js (override TW defaults) */
+@theme {
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1440px;
+  --breakpoint-xxl: 1920px;
+}
+
 .custom-scroll {
   scrollbar-width: thin;
   scrollbar-color: #dee2e6 #f1f3f5;

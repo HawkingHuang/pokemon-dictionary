@@ -132,28 +132,28 @@ onUnmounted(() => {
 
       <UTable
         v-if="showWhatSection === 'moves'"
-        :rows="moves"
+        :data="moves"
         :loading="movesLoading"
         :columns="[
-          { key: 'level', label: 'Level' },
-          { key: 'name', label: 'Name' },
-          { key: 'type', label: 'Type' },
-          { key: 'power', label: 'Power' },
-          { key: 'accuracy', label: 'Accuracy' },
-          { key: 'pp', label: 'PP' },
+          { accessorKey: 'level', header: 'Level' },
+          { accessorKey: 'name', header: 'Name' },
+          { accessorKey: 'type', header: 'Type' },
+          { accessorKey: 'power', header: 'Power' },
+          { accessorKey: 'accuracy', header: 'Accuracy' },
+          { accessorKey: 'pp', header: 'PP' },
         ]"
         class="max-h-[80vh] overflow-y-auto custom-scroll"
       >
-        <template #type-data="{ row }">
+        <template #type-cell="{ row }">
           <span
             class="inline-block px-2 py-0.5 rounded text-sm text-white capitalize"
-            :style="{ backgroundColor: TYPE_COLORS[row.type] ?? '#9099A1' }"
-          >{{ row.type }}</span>
+            :style="{ backgroundColor: TYPE_COLORS[row.original.type] ?? '#9099A1' }"
+          >{{ row.original.type }}</span>
         </template>
-        <template #power-data="{ row }">{{ row.power ?? '—' }}</template>
-        <template #accuracy-data="{ row }">{{ row.accuracy ?? '—' }}</template>
+        <template #power-cell="{ row }">{{ row.original.power ?? '—' }}</template>
+        <template #accuracy-cell="{ row }">{{ row.original.accuracy ?? '—' }}</template>
       </UTable>
-      <UTable v-if="showWhatSection === 'locations'" :rows="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
+      <UTable v-if="showWhatSection === 'locations'" :data="locations" class="max-h-[80vh] overflow-y-auto custom-scroll"/>
 
       <!-- Evolution chain — custom timeline (UTimeline not available in @nuxt/ui v2.x) -->
       <div v-if="showWhatSection === 'evolution'" class="mt-4 flex flex-col items-center gap-0">

@@ -12,14 +12,11 @@ onMounted(() => {
   carouselConfigs.forEach((_, index) => {
     const intervalId = window.setInterval(() => {
       const carousel = carouselRefs.value[index]
-      if (!carousel) return
+      const embla = carousel?.emblaApi?.value ?? carousel?.emblaApi
+      if (!embla || typeof embla.canScrollNext !== 'function') return
 
-      if (carousel.page === carousel.pages) {
-        carousel.select(0)
-        return
-      }
-
-      carousel.next()
+      if (embla.canScrollNext()) embla.scrollNext()
+      else embla.scrollTo(0)
     }, 5000)
 
     carouselIntervals.push(intervalId)
@@ -92,9 +89,10 @@ const getVersionInfo = async (id: number) => {
       :ref="el => carouselRefs[index] = el"
       v-slot="{ item }"
       :items="carousel.items"
+      :ui="{ item: 'basis-auto' }"
       class="mb-4"
     >
-        <UButton @click="openModal(item)" color="gray" class="mx-2">
+        <UButton @click="openModal(item)" color="neutral" variant="subtle" class="mx-2">
           <img
             @load="markImageLoaded"
             :src="item.image"
@@ -103,14 +101,16 @@ const getVersionInfo = async (id: number) => {
           >
         </UButton>
     </UCarousel>
-    <UModal v-model="isOpen" :ui="{background: 'bg-gradient-to-tr from-gray-100 to-gray-300'}">
-      <div class="mx-auto my-4">
-        <img :src="image" class="rounded-3xl max-h-[300px] w-auto">
-      </div>
-      <div class="text-xl font-bold p-4">Version: {{ version }}</div>
-      <div class="text-xl font-bold p-4">Generation: {{ generation }}</div>
-      <div class="text-xl font-bold p-4">Pokédex: {{ pokedexes }}</div>
-      <div class="text-xl font-bold p-4">Regions: {{ regions }}</div>
+    <UModal v-model:open="isOpen" title="Version Details" :ui="{ content: 'bg-gradient-to-tr from-gray-100 to-gray-300' }">
+      <template #body>
+        <div class="mx-auto my-4">
+          <img :src="image" class="rounded-3xl max-h-[300px] w-auto">
+        </div>
+        <div class="text-xl font-bold p-4">Version: {{ version }}</div>
+        <div class="text-xl font-bold p-4">Generation: {{ generation }}</div>
+        <div class="text-xl font-bold p-4">Pokédex: {{ pokedexes }}</div>
+        <div class="text-xl font-bold p-4">Regions: {{ regions }}</div>
+      </template>
     </UModal>
   </div>
 </template>

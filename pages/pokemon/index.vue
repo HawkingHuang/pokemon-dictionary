@@ -214,11 +214,11 @@ onUnmounted(() => {
   <div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
       <div class="flex gap-2 max-w-[400px]">
-        <UInputMenu v-model="firstPokemonInput" v-model:query="firstPokemonQuery" :options="filteredFirstPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
+        <UInputMenu v-model="firstPokemonInput" v-model:search-term="firstPokemonQuery" :items="filteredFirstPokemonList" :ignore-filter="true" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
         <UButton @click="searchPokemon(firstPokemonInput, 'first')" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
       <div v-if="showFirstPokemon" class="flex gap-2 max-w-[400px]">
-        <UInputMenu v-model="secondPokemonInput" v-model:query="secondPokemonQuery" :options="filteredSecondPokemonList" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
+        <UInputMenu v-model="secondPokemonInput" v-model:search-term="secondPokemonQuery" :items="filteredSecondPokemonList" :ignore-filter="true" placeholder="Type at least 2 letters..." size="xl" class="w-[300px]"/>
         <UButton @click="searchPokemon(secondPokemonInput, 'second')" size="md"><UIcon name="material-symbols:search-rounded" class="w-6 h-6" />Search</UButton>
       </div>
     </div>
@@ -272,7 +272,7 @@ onUnmounted(() => {
         </main>
       </UCard>
       <UCard v-if="showSecondPokemon" class="animate relative">
-        <UButton @click="comparePokemons" class="absolute top-4 right-4" color="yellow" size="md"><UIcon name="material-symbols:compare-arrows" class="w-6 h-6 mr-1" />Compare</UButton>
+        <UButton @click="comparePokemons" class="absolute top-4 right-4" color="warning" size="md"><UIcon name="material-symbols:compare-arrows" class="w-6 h-6 mr-1" />Compare</UButton>
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ secondPokemonBasicInfo.id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ capitalizeName(secondPokemonBasicInfo.name) }}</h4>
@@ -320,20 +320,22 @@ onUnmounted(() => {
           </div>
         </main>
       </UCard>
-      <UModal v-model="isOpen" :ui="{ width: 'max-w-[95vw] sm:max-w-[70vw] lg:max-w-[50vw]' }" class="p-2">
-        <div class="flex justify-around p-4">
-          <div class="bg-blue-400/80 rounded-full p-2">
-            <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+      <UModal v-model:open="isOpen" title="Stat Comparison" :ui="{ content: 'max-w-[95vw] sm:max-w-[70vw] lg:max-w-[50vw]' }">
+        <template #body>
+          <div class="flex justify-around p-4">
+            <div class="bg-blue-400/80 rounded-full p-2">
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+            </div>
+            <div class="bg-red-400/80 rounded-full p-2">
+              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+            </div>
           </div>
-          <div class="bg-red-400/80 rounded-full p-2">
-            <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
-          </div>
-        </div>
-        <ClientOnly>
-          <div class="relative px-4 pb-4" style="height: 400px;">
-            <canvas ref="compareCanvas" />
-          </div>
-        </ClientOnly>
+          <ClientOnly>
+            <div class="relative px-4 pb-4" style="height: 400px;">
+              <canvas ref="compareCanvas" />
+            </div>
+          </ClientOnly>
+        </template>
       </UModal>
     </div>
   </div>

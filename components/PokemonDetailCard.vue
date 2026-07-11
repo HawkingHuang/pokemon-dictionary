@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
-import type { Stat, Move, Location, EvolutionStage } from '@/types/pokemon'
+import type { Stat, Move, Location, EvolutionStage } from '@/types'
 import { TYPE_COLORS } from '@/utils/typeColors'
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
@@ -176,7 +176,7 @@ onUnmounted(() => {
               @click="navigateTo(`/pokedex/${evo.name}?version=${currentVersion}`)"
             >
               <img
-                :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evo.id}.png`"
+                :src="spriteUrl(evo.id)"
                 :alt="evo.name"
                 width="80"
                 height="80"

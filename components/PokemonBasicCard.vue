@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { fetchPokemonDescription } from '@/services/pokeapi'
 import { TYPE_COLORS } from '@/utils/typeColors'
+import type { PokemonBasic } from '@/types'
 
 const props = defineProps<{
   id: string | number
   pokemonName: string
-  basicInfo: any
+  basicInfo: PokemonBasic
   showDetails: boolean
   cardClass?: string
 }>()
@@ -15,13 +17,9 @@ const emit = defineEmits<{
 
 const description = ref<string>('')
 
-watch(() => props.id, async (newId) => {
-  if (!newId) return
-  const species = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${newId}`).then(r => r.json())
-  const entry = species.flavor_text_entries
-    .filter((e: any) => e.language.name === 'en')
-    .at(-1)
-  description.value = entry?.flavor_text.replace(/\f/g, ' ') ?? ''
+watch(() => props.pokemonName, async (newName) => {
+  if (!newName) return
+  description.value = await fetchPokemonDescription(newName).catch(() => '')
 }, { immediate: true })
 </script>
 
@@ -34,7 +32,7 @@ watch(() => props.id, async (newId) => {
       </span>
       <h4 class="text-2xl font-bold mt-2">{{ capitalizeName(pokemonName) }}</h4>
       <img
-        :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`"
+        :src="basicInfo?.image"
         width="240" height="240"
         class="mx-auto mt-2"
       >
@@ -51,24 +49,24 @@ watch(() => props.id, async (newId) => {
           </span>
           <span
             v-for="type in basicInfo?.types || []"
-            :key="type.type.name"
+            :key="type"
             class="px-2 py-1 rounded-lg text-sm text-white capitalize"
-            :style="{ backgroundColor: TYPE_COLORS[type.type.name] ?? '#9FA19F' }"
-          >{{ capitalizeName(type.type.name) }}</span>
+            :style="{ backgroundColor: TYPE_COLORS[type] ?? '#9FA19F' }"
+          >{{ capitalizeName(type) }}</span>
         </div>
         <!-- Abilities -->
         <div class="border rounded-xl p-3 shadow-sm flex items-center flex-wrap gap-2">
           <span class="inline-flex items-center gap-1 bg-green-400 px-2 py-1 rounded-lg font-semibold text-white">
             <UIcon name="heroicons:bolt" class="w-4 h-4" />Abilities
           </span>
-          <span v-for="ability in basicInfo?.abilities || []" :key="ability.ability.name" class="bg-gray-200 px-2 py-1 rounded-lg">{{ capitalizeVersion(ability.ability.name) }}</span>
+          <span v-for="ability in basicInfo?.abilities || []" :key="ability" class="bg-gray-200 px-2 py-1 rounded-lg">{{ capitalizeVersion(ability) }}</span>
         </div>
         <!-- Held Items -->
-        <div v-if="basicInfo?.held_items?.length" class="border rounded-xl p-3 shadow-sm flex items-center flex-wrap gap-2">
+        <div v-if="basicInfo?.heldItems?.length" class="border rounded-xl p-3 shadow-sm flex items-center flex-wrap gap-2">
           <span class="inline-flex items-center gap-1 bg-green-400 px-2 py-1 rounded-lg font-semibold text-white">
             <UIcon name="heroicons:archive-box" class="w-4 h-4" />Held Items
           </span>
-          <span v-for="item in basicInfo.held_items" :key="item.item.name" class="bg-gray-200 px-2 py-1 rounded-lg">{{ capitalizeVersion(item.item.name) }}</span>
+          <span v-for="item in basicInfo.heldItems" :key="item" class="bg-gray-200 px-2 py-1 rounded-lg">{{ capitalizeVersion(item) }}</span>
         </div>
         <!-- Height + Weight -->
         <div class="border rounded-xl p-3 shadow-sm flex flex-wrap gap-6">

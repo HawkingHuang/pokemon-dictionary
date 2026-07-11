@@ -1,2 +1,6 @@
 export type * from './pokemon'
 export type * from './team'
+export type * from './stats'
+export type * from './moves'
+export type * from './locations'
+export type * from './evolution'

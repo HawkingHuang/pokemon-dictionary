@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import type { Stat, Move, Location, EvolutionStage } from '@/types/pokemon'
+import { fetchPokemonBasic, fetchPokemonMoves, fetchPokemonLocations, fetchEvolutionChain } from '@/services/pokeapi'
+import type { Stat, Move, Location, EvolutionStage, PokemonBasic } from '@/types'
+
 definePageMeta({
   layout: 'base-layout'
 })
@@ -11,8 +13,7 @@ const currentVersion = query.version
 
 const isLoading = ref<boolean>(true)
 const showDetails = ref<boolean>(false)
-const id = ref<string>('')
-const basicInfo = ref<any>({})
+const basic = ref<PokemonBasic | null>(null)
 
 const stats = ref<Stat[]>([])
 const moves = ref<Move[]>([])
@@ -20,35 +21,28 @@ const movesLoading = ref<boolean>(true)
 const locations = ref<Location[]>([])
 const evolutionChain = ref<EvolutionStage[]>([])
 
-onMounted(() => {
+onMounted(async () => {
   isLoading.value = true
-  $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon/${name}`,
-    type: 'GET',
-    dataType: 'json',
-    success: async (res) => {
-      id.value = res.id
-      basicInfo.value = res
+  try {
+    const info = await fetchPokemonBasic(String(name))
+    basic.value = info
+    stats.value = info.stats
 
-      stats.value = getStats(res.stats)
-      movesLoading.value = true
-      const [movesResult, locationsResult, chainResult] = await Promise.all([
-        getMoves(res.moves, String(currentVersion ?? '')),
-        getLocations(res.id),
-        getEvolutionChain(String(name)).catch(() => [] as EvolutionStage[])
-      ])
-      moves.value = movesResult
-      movesLoading.value = false
-      locations.value = locationsResult
-      evolutionChain.value = chainResult
-
-      isLoading.value = false
-    },
-    error: (error) => {
-      if (error instanceof Error) console.error(error.message, error.stack)
-      else console.error(error)
-    }
-  })
+    movesLoading.value = true
+    const [movesResult, locationsResult, chainResult] = await Promise.all([
+      fetchPokemonMoves(String(name), String(currentVersion ?? '')).catch(() => [] as Move[]),
+      fetchPokemonLocations(info.id).catch(() => [] as Location[]),
+      fetchEvolutionChain(String(name)).catch(() => [] as EvolutionStage[]),
+    ])
+    moves.value = movesResult
+    movesLoading.value = false
+    locations.value = locationsResult
+    evolutionChain.value = chainResult
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
 })
 
 const switchDetails = () => {
@@ -58,13 +52,13 @@ const switchDetails = () => {
 
 <template>
   <div>
-    <div v-if="!isLoading">
+    <div v-if="!isLoading && basic">
       <Transition name="layout-switch" mode="out-in">
         <div v-if="!showDetails" key="basic-card" class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto">
           <PokemonBasicCard
-            :id="id"
+            :id="basic.id"
             :pokemon-name="String(name)"
-            :basic-info="basicInfo"
+            :basic-info="basic"
             :show-details="showDetails"
             card-class="animate"
             @toggle-details="switchDetails"
@@ -74,9 +68,9 @@ const switchDetails = () => {
         <div v-else key="details-layout" class="grid grid-cols-1 gap-4 xl:flex xl:items-start xl:justify-center xl:gap-8">
           <div class="w-[100%] md:w-[70%] xl:w-[40%] mx-auto split-left-card">
             <PokemonBasicCard
-              :id="id"
+              :id="basic.id"
               :pokemon-name="String(name)"
-              :basic-info="basicInfo"
+              :basic-info="basic"
               :show-details="showDetails"
               @toggle-details="switchDetails"
             />

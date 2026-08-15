@@ -1,7 +1,4 @@
-export interface Version {
-  id: number,
-  image: string
-}
+import type { Version } from '@/types'
 
 export const items: Version[] = [
   {

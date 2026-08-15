@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { fetchVersionInfo } from '@/services/pokeapi'
+import type { Version } from '@/types'
+
 definePageMeta({
   layout: 'base-layout'
 })
@@ -38,46 +41,16 @@ const isOpen = ref(false)
 const openModal = async (item: Version) => {
   image.value = item.image
   try {
-    await getVersionInfo(item.id)
+    const info = await fetchVersionInfo(item.id)
+    version.value = info.version
+    generation.value = info.generation
+    pokedexes.value = info.pokedexes
+    regions.value = info.regions
     isOpen.value = true
   } catch (error) {
     if (error instanceof Error) console.error(error.message, error.stack)
     else console.error(error)
   }
-}
-const getVersionInfo = async (id: number) => {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: `https://pokeapi.co/api/v2/version/${id}`,
-      type: 'GET',
-      dataType: 'json',
-      success: (res) => {
-        version.value = capitalizeVersion(res.name)
-
-        $.ajax({
-          url: res.version_group.url,
-          type: 'GET',
-          dataType: 'json',
-          success: (details) => {
-            generation.value = capitalizeGeneration(details.generation.name)
-            pokedexes.value = capitalizePokedexes(details.pokedexes)
-            regions.value = capitalizeRegions(details.regions)
-
-            resolve(res)
-          },
-          error: (error) => {
-            if (error instanceof Error) console.error(error.message, error.stack)
-            else console.error(error)
-          }
-        })
-      },
-      error: (error) => {
-        if (error instanceof Error) console.error(error.message, error.stack)
-        else console.error(error)
-        reject(error)
-      }
-    })
-  })
 }
 </script>
 

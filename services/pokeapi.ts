@@ -1,10 +1,15 @@
 import { POKEAPI_BASE_URL } from '@/utils/constants'
-import { artworkUrl } from '@/utils/pokemonSprites'
-import { capitalizeLocation, capitalizeLocationVersion, capitalizeVersion } from '@/utils/capitalize'
+import { artworkUrl, spriteUrl } from '@/utils/pokemonSprites'
+import {
+  capitalizeLocation, capitalizeLocationVersion, capitalizeVersion,
+  capitalizeGeneration, capitalizePokedexes, capitalizeRegions,
+} from '@/utils/capitalize'
 import type {
   PokemonIndexEntry, PokemonDetail, PokemonBasic, APIPokemon, APISpecies,
   Stat, APIStat, Move, APIMoveDetail, Location, APIEncounterLocation,
   EvolutionStage, APIEvolutionChain, APIEvolutionChainNode,
+  VersionInfo, APIVersion, APIVersionGroup,
+  PokedexEntry, APIPokedex, APIPokedexSpecies,
 } from '@/types'
 
 // PokéAPI calls via Nuxt's $fetch; transport centralized here
@@ -152,4 +157,47 @@ export async function fetchPokemonDescription(idOrName: number | string): Promis
   const species = await rawSpecies(idOrName)
   const entry = species.flavor_text_entries.filter(e => e.language.name === 'en').at(-1)
   return entry?.flavor_text.replace(/\f/g, ' ') ?? ''
+}
+
+// Version detail (name + its version-group's generation/pokedexes/regions), memoized (retryable)
+const versionInfoCache = new Map<number, Promise<VersionInfo>>()
+export function fetchVersionInfo(id: number): Promise<VersionInfo> {
+  let cached = versionInfoCache.get(id)
+  if (!cached) {
+    cached = (async () => {
+      const version = await $fetch<APIVersion>(`${POKEAPI_BASE_URL}/version/${id}`)
+      const group = await $fetch<APIVersionGroup>(version.version_group.url)
+      return {
+        version: capitalizeVersion(version.name),
+        generation: capitalizeGeneration(group.generation.name),
+        pokedexes: capitalizePokedexes(group.pokedexes),
+        regions: capitalizeRegions(group.regions),
+      }
+    })().catch((err) => { versionInfoCache.delete(id); throw err })
+    versionInfoCache.set(id, cached)
+  }
+  return cached
+}
+
+// Pokédex list entries (national-dex id + name + default sprite), memoized per dex (retryable).
+// The per-species id lookup tolerates individual failures — a species that fails is dropped.
+const pokedexCache = new Map<number, Promise<PokedexEntry[]>>()
+export function fetchPokedexEntries(pokedexId: number): Promise<PokedexEntry[]> {
+  let cached = pokedexCache.get(pokedexId)
+  if (!cached) {
+    cached = (async () => {
+      const dex = await $fetch<APIPokedex>(`${POKEAPI_BASE_URL}/pokedex/${pokedexId}`)
+      const names = dex.pokemon_entries.map(e => e.pokemon_species.name)
+      const settled = await Promise.allSettled(
+        names.map(name => $fetch<APIPokedexSpecies>(`${POKEAPI_BASE_URL}/pokemon-species/${name}`)),
+      )
+      return names.flatMap((name, i) => {
+        const r = settled[i]
+        if (!r || r.status !== 'fulfilled') return []
+        return [{ id: r.value.id, name, image: spriteUrl(r.value.id) }]
+      })
+    })().catch((err) => { pokedexCache.delete(pokedexId); throw err })
+    pokedexCache.set(pokedexId, cached)
+  }
+  return cached
 }

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { fetchPokedexEntries } from '@/services/pokeapi'
+import type { PokedexEntry } from '@/types'
+
 definePageMeta({
   layout: 'base-layout'
 })
@@ -10,66 +13,24 @@ const selectedVersionParam = useState<string>('selectedVersionParam', () => '')
 watch(currentVersion, (newValue: string) => {
   selectedVersionParam.value = determineParam(newValue)
 })
-const pokedexInfo = useState<any>('pokedexInfo', () => [])
+const pokedexInfo = useState<PokedexEntry[]>('pokedexInfo', () => [])
 
-const fetchPokemonSpecies = (name: string) => {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: `https://pokeapi.co/api/v2/pokemon-species/${name}`,
-      type: 'GET',
-      dataType: 'json',
-      success: (res) => {
-        resolve({
-          id: res.id,
-          name: name,
-          image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${res.id}.png`
-        })
-      },
-      error: (error) => {
-        if (error instanceof Error) console.error(error.message, error.stack)
-        else console.error(error)
-        reject(error)
-      }
-    })
-  })
-}
-
-const getPokedexInfo = (id: number, version: string) => {
-  const lazyImages = document.getElementsByClassName('lazy-img')
-  for(let i = 0; i < lazyImages.length; i++) {
-    lazyImages[i].classList.remove('loaded')
-  }
+const getPokedexInfo = async (id: number, version: string) => {
+  Array.from(document.getElementsByClassName('lazy-img')).forEach(img => img.classList.remove('loaded'))
 
   currentVersion.value = ''
   pokedexInfo.value = []
   isLoading.value = true
   isOpen.value = false
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: `https://pokeapi.co/api/v2/pokedex/${id}`,
-      type: 'GET',
-      dataType: 'json',
-      success: async (res) => {
-        const pokemonEntries = [...res.pokemon_entries]
-
-        const unorderedPokemonList = await Promise.all(
-          pokemonEntries.map((entry) => {
-            return fetchPokemonSpecies(entry.pokemon_species.name)
-          })
-        )
-
-        pokedexInfo.value = unorderedPokemonList
-        resolve(res)
-        isLoading.value = false
-        currentVersion.value = version
-      },
-      error: (error) => {
-        if (error instanceof Error) console.error(error.message, error.stack)
-        else console.error(error)
-        reject(error)
-      }
-    })
-  })
+  try {
+    pokedexInfo.value = await fetchPokedexEntries(id)
+    currentVersion.value = version
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message, error.stack)
+    else console.error(error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 <template>

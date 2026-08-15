@@ -1,27 +1,13 @@
 <script setup lang="ts">
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
+import { fetchPokemonBasic, fetchPokemonIndex } from '@/services/pokeapi'
+import type { PokemonBasic, Stat } from '@/types'
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip)
 
 definePageMeta({
   layout: 'base-layout'
 })
-
-interface Stat {
-  stat: string,
-  base: number
-}
-
-const getStats = (res: any) => {
-  const baseFiveStats =  res.stats.map((stat: any) => {
-    return { stat: capitalizeVersion(stat.stat.name), base: stat.base_stat }
-  })
-  baseFiveStats.push({ stat: 'Total', base: baseFiveStats.reduce((acc: number, cur: Stat) => {
-    return acc + cur.base
-  }, 0)})
-
-  return baseFiveStats
-}
 
 const firstStatsCanvas = ref<HTMLCanvasElement | null>(null)
 const secondStatsCanvas = ref<HTMLCanvasElement | null>(null)
@@ -106,16 +92,16 @@ function buildCompareChart(canvas: HTMLCanvasElement, firstStats: Stat[], second
 }
 
 const firstPokemonInput = ref<string>('')
-const firstPokemonBasicInfo = ref<any>({})
+const firstPokemonBasicInfo = ref<PokemonBasic | null>(null)
 const firstPokemonStats = ref<Stat[]>([])
 const showFirstPokemon = ref<boolean>(false)
 
 const secondPokemonInput = ref<string>('')
-const secondPokemonBasicInfo = ref<any>({})
+const secondPokemonBasicInfo = ref<PokemonBasic | null>(null)
 const secondPokemonStats = ref<Stat[]>([])
 const showSecondPokemon = ref<boolean>(false)
 
-const searchPokemon = (pokemon: string, slot: 'first' | 'second') => {
+const searchPokemon = async (pokemon: string, slot: 'first' | 'second') => {
   const basicInfo = slot === 'first' ? firstPokemonBasicInfo : secondPokemonBasicInfo
   const stats = slot === 'first' ? firstPokemonStats : secondPokemonStats
   const show = slot === 'first' ? showFirstPokemon : showSecondPokemon
@@ -123,26 +109,21 @@ const searchPokemon = (pokemon: string, slot: 'first' | 'second') => {
 
   if (slot === 'second') show.value = false
 
-  $.ajax({
-    url: `https://pokeapi.co/api/v2/pokemon/${pokemon.toLowerCase()}`,
-    type: 'GET',
-    dataType: 'json',
-    success: (res) => {
-      basicInfo.value = res
-      stats.value = getStats(res)
-      show.value = true
-      nextTick(() => {
-        if (canvas.value) {
-          charts[slot]?.destroy()
-          charts[slot] = buildChart(canvas.value, stats.value)
-        }
-      })
-    },
-    error: (error) => {
-      if (error instanceof Error) console.error(error.message, error.stack)
-      else console.error(error)
-    }
-  })
+  try {
+    const info = await fetchPokemonBasic(pokemon.toLowerCase())
+    basicInfo.value = info
+    stats.value = info.stats
+    show.value = true
+    nextTick(() => {
+      if (canvas.value) {
+        charts[slot]?.destroy()
+        charts[slot] = buildChart(canvas.value, stats.value)
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message, error.stack)
+    else console.error(error)
+  }
 }
 
 
@@ -162,21 +143,14 @@ const filteredFirstPokemonList = computed(() => filterPokemon(firstPokemonQuery.
 const secondPokemonQuery = ref<string>('')
 const filteredSecondPokemonList = computed(() => filterPokemon(secondPokemonQuery.value))
 
-onMounted(() => {
-  $.ajax({
-    url: 'https://pokeapi.co/api/v2/pokemon?limit=1025',
-    type: 'GET',
-    dataType: 'json',
-    success: (res) => {
-      pokemonSearchList.value = res.results.map((pokemon: any) => {
-        return capitalizeName(pokemon.name)
-      })
-    },
-    error: (error) => {
-      if (error instanceof Error) console.error(error.message, error.stack)
-      else console.error(error)
-    }
-  })
+onMounted(async () => {
+  try {
+    const index = await fetchPokemonIndex()
+    pokemonSearchList.value = index.map(p => capitalizeName(p.name))
+  } catch (error) {
+    if (error instanceof Error) console.error(error.message, error.stack)
+    else console.error(error)
+  }
 })
 
 const isOpen = ref<boolean>(false)
@@ -191,8 +165,8 @@ watch(isOpen, (val) => {
           compareCanvas.value,
           firstPokemonStats.value,
           secondPokemonStats.value,
-          capitalizeName(firstPokemonBasicInfo.value.name),
-          capitalizeName(secondPokemonBasicInfo.value.name)
+          capitalizeName(firstPokemonBasicInfo.value?.name ?? ''),
+          capitalizeName(secondPokemonBasicInfo.value?.name ?? '')
         )
       }
     })
@@ -223,11 +197,11 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-4">
-      <UCard v-if="showFirstPokemon" class="animate">
+      <UCard v-if="showFirstPokemon && firstPokemonBasicInfo" class="animate">
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ firstPokemonBasicInfo.id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ capitalizeName(firstPokemonBasicInfo.name) }}</h4>
-          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" class="max-h-[225px] w-auto mx-auto">
+          <img :src="firstPokemonBasicInfo.image" class="max-h-[225px] w-auto mx-auto">
         </template>
 
         <main class="text-lg">
@@ -235,15 +209,15 @@ onUnmounted(() => {
             <div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Type</span>
-                <span v-for="type in firstPokemonBasicInfo.types" :key="type.type.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeName(type.type.name) }}</span>
+                <span v-for="type in firstPokemonBasicInfo.types" :key="type" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeName(type) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Abilities</span>
-                <span v-for="ability in firstPokemonBasicInfo.abilities" :key="ability.ability" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(ability.ability.name) }}</span>
+                <span v-for="ability in firstPokemonBasicInfo.abilities" :key="ability" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(ability) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Held Items</span>
-                <span v-for="item in firstPokemonBasicInfo.held_items" :key="item.item.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(item.item.name) }}</span>
+                <span v-for="item in firstPokemonBasicInfo.heldItems" :key="item" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(item) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <div class="flex gap-4">
@@ -271,12 +245,12 @@ onUnmounted(() => {
           </div>
         </main>
       </UCard>
-      <UCard v-if="showSecondPokemon" class="animate relative">
+      <UCard v-if="showSecondPokemon && secondPokemonBasicInfo" class="animate relative">
         <UButton @click="comparePokemons" class="absolute top-4 right-4" color="warning" size="md"><UIcon name="material-symbols:compare-arrows" class="w-6 h-6 mr-1" />Compare</UButton>
         <template #header>
           <span class="flex items-center text-xl font-bold bg-gray-200 p-1 rounded max-w-[75px]"><UIcon name="i-gg:pokemon" class="w-6 h-6 mr-1" /> {{ secondPokemonBasicInfo.id }}</span>
           <h4 class="text-xl font-bold mt-2">{{ capitalizeName(secondPokemonBasicInfo.name) }}</h4>
-          <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" class="max-h-[225px] w-auto mx-auto">
+          <img :src="secondPokemonBasicInfo.image" class="max-h-[225px] w-auto mx-auto">
         </template>
 
         <main class="text-lg">
@@ -284,15 +258,15 @@ onUnmounted(() => {
             <div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Type</span>
-                <span v-for="type in secondPokemonBasicInfo.types" :key="type.type.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeName(type.type.name) }}</span>
+                <span v-for="type in secondPokemonBasicInfo.types" :key="type" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeName(type) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Abilities</span>
-                <span v-for="ability in secondPokemonBasicInfo.abilities" :key="ability.ability" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(ability.ability.name) }}</span>
+                <span v-for="ability in secondPokemonBasicInfo.abilities" :key="ability" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(ability) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <span class="bg-green-400 p-1 rounded inline-block">Held Items</span>
-                <span v-for="item in secondPokemonBasicInfo.held_items" :key="item.item.name" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(item.item.name) }}</span>
+                <span v-for="item in secondPokemonBasicInfo.heldItems" :key="item" class="bg-gray-200 p-1 rounded ml-1 mt-1 inline-block">{{ capitalizeVersion(item) }}</span>
               </div>
               <div class="border rounded p-4 mb-2">
                 <div class="flex gap-4">
@@ -322,12 +296,12 @@ onUnmounted(() => {
       </UCard>
       <UModal v-model:open="isOpen" title="Stat Comparison" :ui="{ content: 'max-w-[95vw] sm:max-w-[70vw] lg:max-w-[50vw]' }">
         <template #body>
-          <div class="flex justify-around p-4">
+          <div v-if="firstPokemonBasicInfo && secondPokemonBasicInfo" class="flex justify-around p-4">
             <div class="bg-blue-400/80 rounded-full p-2">
-              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${firstPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+              <img :src="firstPokemonBasicInfo.image" alt="" class="w-24 h-24 object-contain">
             </div>
             <div class="bg-red-400/80 rounded-full p-2">
-              <img :src="`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${secondPokemonBasicInfo.id}.png`" alt="" class="w-24 h-24 object-contain">
+              <img :src="secondPokemonBasicInfo.image" alt="" class="w-24 h-24 object-contain">
             </div>
           </div>
           <ClientOnly>

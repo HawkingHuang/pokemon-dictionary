@@ -4,7 +4,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
   modules: ['@nuxt/ui'],
-  plugins: ['~/plugins/jquery.client.ts'],
   app: {
     head: {
       title: 'Pokémon Dictionary',
